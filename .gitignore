@@ -1,0 +1,12 @@
+#Virtualenv
+venv/
+
+#Bower
+bower_components/
+
+#Node Modules
+node_modules/
+
+#Python
+*.pyc
+

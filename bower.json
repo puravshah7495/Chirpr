@@ -1,0 +1,22 @@
+{
+  "name": "chirpr",
+  "description": "",
+  "main": "index.js",
+  "authors": [
+    "Purav Shah <puravshah23@gmail.com>"
+  ],
+  "license": "ISC",
+  "homepage": "https://github.com/puravshah7495/Chirpr",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "^3.2.1",
+    "bootstrap": "^3.3.7",
+    "react": "^15.4.2"
+  }
+}
