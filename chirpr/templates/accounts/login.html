@@ -1,0 +1,17 @@
+<html>
+    <head>
+        <title>Login</title>
+        <script src="{{ url_for('static', filename='bower_components/jquery/dist/jquery.min.js') }}"></script>
+    </head>
+    <body>
+        <form method="POST" action="/login" id="login_form">
+            <label for="username">Username: </label>
+            <input type="text" name="username" value="">
+            <br />
+            <label for="password">Password: </label>
+            <input type="password" name="password" value="">
+            <br />
+            <input type="submit" value="Submit">
+        </form>
+    </body>
+</html>

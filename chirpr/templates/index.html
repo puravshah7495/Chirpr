@@ -1,0 +1,13 @@
+<html>
+    <head>
+        <title>Chirpr</title>
+    </head>
+    <body>
+        {% if session.loggedIn %}
+            <a href="/logout">Logout</a>
+        {% else %}
+            <a href="/register">Register</a>
+            <a href="/login">Login</a>
+        {% endif %}
+    </body>
+</html>
