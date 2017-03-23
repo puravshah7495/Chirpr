@@ -4,8 +4,7 @@ from chirpr.models import db, Users, getRequestData
 
 account = Blueprint("account", __name__)
 
-@account.route('/register', methods=['GET'])
-@account.route('/adduser', methods=['POST'])
+@account.route('/adduser', methods=['GET','POST'])
 def createAccount():
     if request.method == 'GET':
         return render_template('accounts/register.html')
@@ -29,12 +28,13 @@ def createAccount():
     if email.find('@') == -1:
         error = True
         errorMsg = 'Not a valid email'
-
-    newUser = Users(username, password, email)
-    db.session.add(newUser)
-    db.session.commit()
    
     if not error:
+        newUser = Users(username, password, email)
+        db.session.add(newUser)
+        db.session.commit()
+        session['loggedIn'] = True
+        session['username'] = username
         return jsonify({'status':'OK'})
     else:
         return jsonify({'status':'ERROR', 'error': errorMsg})

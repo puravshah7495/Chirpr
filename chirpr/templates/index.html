@@ -1,10 +1,13 @@
 <html>
     <head>
         <title>Chirpr</title>
+        <script src="{{ url_for('static', filename='bower_components/jquery/dist/jquery.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/index.js') }}"></script>
     </head>
     <body>
+        <h1>Welome to Chirpr</h1>
         {% if session.loggedIn %}
-            <a href="/logout">Logout</a>
+            <input type="button" value="Logout" id="logout"/>
         {% else %}
             <a href="/register">Register</a>
             <a href="/login">Login</a>
