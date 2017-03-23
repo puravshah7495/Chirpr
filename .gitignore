@@ -10,3 +10,5 @@ node_modules/
 #Python
 *.pyc
 
+#Configuration
+app.cfg
