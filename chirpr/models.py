@@ -27,12 +27,22 @@ class Chirps(db.Model):
 	__tablename__ = 'chirps'
 	id = db.Column(db.Integer, primary_key=True)
 	content = db.Column(db.String(140), nullable=False)
-	user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+	username = db.Column(db.String(20), db.ForeignKey('users.username'), nullable=False)
 	timestamp = db.Column(db.DateTime, default=datetime.utcnow())
 
-	def __init__(self, content, user_id):
+	def __init__(self, content, username):
 		self.content = content
-		self.user_id = user_id
+		self.username = username
+
+
+	def toDict(self):
+                return { 
+                        'id': self.id,
+                        'content': self.content,
+                        'username': self.username,
+                        'timestamp': self.timestamp
+                }
+
 
 class VerifyKeys(db.Model):
 	__tablename__ = 'verifykeys'

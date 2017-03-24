@@ -61,8 +61,10 @@ def login():
             errorMsg = "Invalid username or password"
         
         if not error:
+            print username
             session['loggedIn'] = True
             session['username'] = username
+            session['user_id'] = user.id
             return jsonify({'status': 'OK'})
         else:
             return jsonify({'status': 'ERROR', 'error': errorMsg})
@@ -72,6 +74,7 @@ def logout():
     if session.get('loggedIn'):
         session.pop('loggedIn', None)
         session.pop('username', None)
+        session.pop('user_id',None)
         return jsonify({'status': 'OK'})
     else:
         return jsonify({'status': 'ERROR', error: 'Woops, Something went wrong!'})
