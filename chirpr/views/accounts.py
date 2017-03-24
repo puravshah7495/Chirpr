@@ -8,36 +8,37 @@ account = Blueprint("account", __name__)
 def createAccount():
     if request.method == 'GET':
         return render_template('accounts/register.html')
-    error = False
-    errorMsg = ''
-
-    data = getRequestData(request)
-
-    if 'username' not in data or 'password' not in data or 'email' not in data:
-        error = True
-        errorMsg = 'Invalid request'
-
-    username = data['username']
-    email = data['email']
-    password = data['password']
-    
-    if len(password) < 8:
-        error = True
-        errorMsg = 'Password too short'
-
-    if email.find('@') == -1:
-        error = True
-        errorMsg = 'Not a valid email'
-   
-    if not error:
-        newUser = Users(username, password, email)
-        db.session.add(newUser)
-        db.session.commit()
-        session['loggedIn'] = True
-        session['username'] = username
-        return jsonify({'status':'OK'})
     else:
-        return jsonify({'status':'ERROR', 'error': errorMsg})
+        error = False
+        errorMsg = ''
+
+        data = getRequestData(request)
+	print data
+        if 'username' not in data or 'password' not in data or 'email' not in data:
+            error = True
+            errorMsg = 'Invalid request'
+
+        username = data['username']
+        email = data['email']
+        password = data['password']
+
+        if len(password) < 8:
+            error = True
+            errorMsg = 'Password too short'
+
+        if email.find('@') == -1:
+            error = True
+            errorMsg = 'Not a valid email'
+
+        if not error:
+            newUser = Users(username, password, email)
+            db.session.add(newUser)
+            db.session.commit()
+            session['loggedIn'] = True
+            session['username'] = username
+            return jsonify({'status':'OK'})
+        else:
+            return jsonify({'status':'ERROR', 'error': errorMsg})
 
 @account.route('/login', methods=['GET','POST'])
 def login():
