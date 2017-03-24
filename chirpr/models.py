@@ -30,6 +30,10 @@ class Chirps(db.Model):
 	user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 	timestamp = db.Column(db.DateTime, default=datetime.utcnow())
 
+	def __init__(self, content, user_id):
+		self.content = content
+		self.user_id = user_id
+
 class VerifyKeys(db.Model):
 	__tablename__ = 'verifykeys'
 	user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
