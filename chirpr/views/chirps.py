@@ -16,16 +16,16 @@ def addItem():
 
 		data = getRequestData(request)
 
-	    if ('content' not in data):
-	    	error = True
-	    	errorMsg = 'Invalid request'
+		if ('content' not in data):
+			error = True
+			errorMsg = 'Invalid request'
 
 		content = data['content']
 
 		if (len('content') > 140):
 			return jsonify({'status':'error', 'error':'Chirp is too long'})
 
-		chirp = new Chirp(content, user_id)
+		chirp = Chirp(content, user_id)
 		db.session.add(chirp)
 		db.session.commit()
 		return jsonify({'status':'OK', 'id':chirp.id})
@@ -63,7 +63,7 @@ def search():
 
 		if not limit:
 			limit = 25
-		chirps = Chirps.query.filter_by('timestamp'=timestamp).limit(limit)
-		return jsonify({'status':'error', items=chirps})
+		chirps = Chirps.query.filter_by(timestamp=timestamp).limit(limit)
+		return jsonify({'status':'error', items:chirps})
 	except:
 		return jsonify({'status':'error', 'error':errorMsg})
