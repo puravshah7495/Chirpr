@@ -16,9 +16,9 @@ def addItem():
 
 		data = getRequestData(request)
 
-	    if ('content' not in data):
-	    	error = True
-	    	errorMsg = 'Invalid request'
+		if ('content' not in data):
+			error = True
+			errorMsg = 'Invalid request'
 
 		content = data['content']
 
