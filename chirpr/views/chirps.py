@@ -30,6 +30,7 @@ def addItem():
 		db.session.commit()
 		return jsonify({'status':'OK', 'id':chirp.id})
 	except Exception as e:
+		print e
 		return jsonify({'status':'error', 'error':errorMsg})
 
 @chirpMod.route('/item/<int:id>', methods=['GET'])
@@ -45,7 +46,8 @@ def getChirp(id):
 		if not chirp:
 			return jsonify({'status':'error', 'error':'ID not found'})
 		return jsonify({'status':'OK', item:chirp})
-	except:
+	except Exception as e:
+		print e
 		return jsonify({'status':'error', 'error':errorMsg})
 
 @chirpMod.route('/search', methods=['POST'])
@@ -65,5 +67,6 @@ def search():
 			limit = 25
 		chirps = Chirps.query.filter_by(timestamp=timestamp).limit(limit)
 		return jsonify({'status':'error', items:chirps})
-	except:
+	except Exception as e:
+		print e
 		return jsonify({'status':'error', 'error':errorMsg})
