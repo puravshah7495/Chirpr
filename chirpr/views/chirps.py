@@ -1,5 +1,5 @@
 from flask import Blueprint, request, render_template, session, jsonify, redirect
-from chirpr.models import db, Users, getRequestData
+from chirpr.models import db, Users, Chirps, getRequestData
 
 chirpMod = Blueprint("chirpMod", __name__)
 
@@ -25,7 +25,7 @@ def addItem():
 		if (len('content') > 140):
 			return jsonify({'status':'error', 'error':'Chirp is too long'})
 
-		chirp = new Chirp(content, user_id)
+		chirp = Chirps(content, user_id)
 		db.session.add(chirp)
 		db.session.commit()
 		return jsonify({'status':'OK', 'id':chirp.id})
