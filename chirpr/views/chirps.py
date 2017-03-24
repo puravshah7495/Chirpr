@@ -45,7 +45,7 @@ def getChirp(id):
 
 		if not chirp:
 			return jsonify({'status':'error', 'error':'ID not found'})
-		return jsonify({'status':'OK', item:chirp})
+		return jsonify({'status':'OK', 'item':chirp})
 	except Exception as e:
 		print e
 		return jsonify({'status':'error', 'error':errorMsg})
