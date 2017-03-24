@@ -23,6 +23,13 @@ class Users(db.Model):
 		self.password = password
 		self.email = email
 
+class Chirps(db.Model):
+	__tablename__ = 'chirps'
+	id = db.Column(db.Integer, primary_key=True)
+	content = db.Column(db.String(140), nullable=False)
+	user_id = db.Column(db.Integer.ForeignKey('users.id'), nullable=False)
+	timestamp = db.Column(db.DateTime, server_default=db.func.now())
+
 class VerifyKeys(db.Model):
 	__tablename__ = 'verifykeys'
 	user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
