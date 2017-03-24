@@ -66,7 +66,7 @@ def search():
 		if not limit:
 			limit = 25
 		chirps = Chirps.query.filter_by(timestamp=timestamp).limit(limit)
-		return jsonify({'status':'error', items:chirps})
+		return jsonify({'status':'error', 'items':chirps})
 	except Exception as e:
 		print e
 		return jsonify({'status':'error', 'error':errorMsg})
