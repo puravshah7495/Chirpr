@@ -25,14 +25,14 @@ def createAccount():
         if len(password) < 8:
             error = True
             errorMsg = 'Password too short'
-
-        if email.find('@') == -1:
+	elif email.find('@') == -1:
             error = True
             errorMsg = 'Not a valid email'
 
         if not error:
             newUser = Users(username, password, email)
             db.session.add(newUser)
+	    db.session.flush()
             db.session.commit()
             session['loggedIn'] = True
             session['username'] = username
@@ -55,16 +55,22 @@ def login():
         
         username = data['username']
         password = data['password']
-        user = Users.query.filter_by(username=username, password=password).first()
-        if not user:
+	print username
+	print password
+        user = Users.query.filter(Users.username == username).first()
+        print user
+	
+	if user is None:
             error = True
             errorMsg = "Invalid username or password"
+	elif not user.password == password:
+	    error = True
+	    errorMsg = "Invalid username or password"
         
-        if not error:
+	if not error:
             print username
             session['loggedIn'] = True
             session['username'] = username
-            session['user_id'] = user.id
             return jsonify({'status': 'OK'})
         else:
             return jsonify({'status': 'ERROR', 'error': errorMsg})
@@ -74,7 +80,6 @@ def logout():
     if session.get('loggedIn'):
         session.pop('loggedIn', None)
         session.pop('username', None)
-        session.pop('user_id',None)
         return jsonify({'status': 'OK'})
     else:
         return jsonify({'status': 'ERROR', error: 'Woops, Something went wrong!'})

@@ -10,9 +10,6 @@ db.create_all(app=app)
 app.register_blueprint(account)
 app.register_blueprint(chirpMod)
 
-with app.app_context():
-    db.create_all()
-
 @app.route('/')
 def index():
     return render_template('index.html')

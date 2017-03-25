@@ -1,6 +1,7 @@
 from flask import Blueprint, request, render_template, session, jsonify, redirect
 from chirpr.models import db, Users, Chirps, getRequestData
 from datetime import datetime
+import traceback
 
 chirpMod = Blueprint("chirpMod", __name__)
 
@@ -57,13 +58,11 @@ def search():
 	errorMsg = ''
 	try:
 		data = getRequestData(request)
-		
+		print data
 		if not 'timestamp' in data:
 			timestamp = datetime.utcnow()
-			print timestamp
 		else:
-			timestamp = datetime.utcfromtimestamp(data['timestamp'])
-			print timestamp
+			timestamp = datetime.strptime(data['timestamp'], "%a, %d %b %Y %H:%M:%S %Z");
 
 		if 'limit' in data:
 			limit = data['limit']
@@ -71,10 +70,8 @@ def search():
 			limit = 25
 
 		chirps = Chirps.query.filter(Chirps.timestamp <= timestamp).order_by(Chirps.timestamp.desc()).limit(limit).all()
-		print chirps
 		chirpsList = [x.toDict() for x in chirps]
-		print chirpsList
 		return jsonify({'status':'OK', 'items':chirpsList})
 	except Exception as e:
-		print e
+		print traceback.print_exc()
 		return jsonify({'status':'error', 'error':errorMsg})

@@ -12,8 +12,8 @@ def getRequestData(request):
 
 class Users(db.Model):
 	__tablename__ = 'users'
-	id = db.Column(db.Integer, primary_key=True)
-	username = db.Column(db.String(20), nullable=False, unique=True)
+	#id = db.Column(db.Integer, primary_key=True)
+	username = db.Column(db.String(20), primary_key=True)
 	password = db.Column(db.String(255), nullable=False)
 	email = db.Column(db.String(255), unique=True, nullable=False)
 	verified = db.Column(db.Boolean(), nullable=False, default=False)
@@ -46,7 +46,7 @@ class Chirps(db.Model):
 
 class VerifyKeys(db.Model):
 	__tablename__ = 'verifykeys'
-	user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+	email = db.Column(db.String(255), db.ForeignKey('users.email'), primary_key=True)
 	emailed_key = db.Column(db.String(100))
 
 	user = db.relationship('Users', backref='verifykey')
