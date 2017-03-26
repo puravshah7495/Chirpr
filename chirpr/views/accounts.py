@@ -57,7 +57,9 @@ def login():
         password = data['password']
 	print username
 	print password
-        user = Users.query.filter(Users.username == username).first()
+	user = db.session.execute("select * from users where username = :val" , {'val':username}).fetchone()
+	#print result
+        #user = Users.query.filter(Users.username == username).first()
         print user
 	
 	if user is None:
