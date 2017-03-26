@@ -30,10 +30,12 @@ def createAccount():
             errorMsg = 'Not a valid email'
 
         if not error:
-            newUser = Users(username, password, email)
-            db.session.add(newUser)
-	    db.session.flush()
-            db.session.commit()
+            #newUser = Users(username, password, email)
+            #db.session.add(newUser)
+	    #db.session.flush()
+            #db.session.commit()
+	    db.session.execute("INSERT INTO users (username, password, email, verified) VALUES (:username, :password, :email, :verified)",
+				{'username':username, 'password':password, 'email':email,'verified':False})		
             session['loggedIn'] = True
             session['username'] = username
             return jsonify({'status':'OK'})
