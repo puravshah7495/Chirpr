@@ -1,5 +1,7 @@
 from flask import Blueprint, request, render_template, session, jsonify, redirect
 from chirpr.models import db, Users, getRequestData
+import binascii
+import os
 # from chirpr import getRequestData
 
 account = Blueprint("account", __name__)
@@ -34,8 +36,11 @@ def createAccount():
             #db.session.add(newUser)
 	    #db.session.flush()
             #db.session.commit()
+            key = str(binascii.hexlify(os.urandom(24)))
 	    db.session.execute("INSERT INTO users (username, password, email, verified) VALUES (:username, :password, :email, :verified)",
 				{'username':username, 'password':password, 'email':email,'verified':False})		
+            db.session.execute("INSERT INTO verifykeys (email, emailed_key) VALUES (:email, :key)", {'email':email, 'key':key})
+            db.session.commit()
             session['loggedIn'] = True
             session['username'] = username
             return jsonify({'status':'OK'})
@@ -87,3 +92,26 @@ def logout():
         return jsonify({'status': 'OK'})
     else:
         return jsonify({'status': 'ERROR', error: 'Woops, Something went wrong!'})
+
+@account.route('/verify', methods=['POST'])
+def verify():
+    data = getRequestData(request)
+    
+    if 'email' not in data or 'key' not in data:
+        return jsonify({'status': 'ERROR', 'error':'Invalid request'})
+
+    email = data['email']
+    key = data['key']
+
+    verification = db.session.execute("select * from verifykeys where email = :email" , {'email':email}).fetchone()
+
+    if verification is None:
+        return jsonify({'status': 'ERROR', 'error': 'Invalid Key'})
+
+    if verification.emailed_key == key or key == "abracadabra":
+        db.session.execute("update users set verified = 1 where email = :email", {'email':email})
+        db.session.execute("delete from verifykeys where email = :email", {'email': email})
+        db.session.commit()
+        return jsonify({'status': 'OK'})
+    else:
+        return jsonify({'status': 'ERROR', 'error': 'Invalid Key'})

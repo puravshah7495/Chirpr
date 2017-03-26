@@ -22,14 +22,11 @@
         depth: 1
     - name: curl node
       shell: 'curl -sL https://deb.nodesource.com/setup_7.x | sudo -E bash -'
-      notify:
-        - Install nodejs
-    - name: Install Node Packages
-      npm:
-        path: /notdecaf/Chirpr
-  handlers:
-    - name: Install nodejs
       apt: name={{ item }} state=present
+    - name: Install nodejs
       with_items:
         - nodejs
         - build-essential 
+    - name: Install Node Packages
+      npm:
+        path: /notdecaf/Chirpr
