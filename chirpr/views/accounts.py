@@ -1,5 +1,5 @@
 from flask import Blueprint, request, render_template, session, jsonify, redirect
-from chirpr.models import db, Users, getRequestData
+from chirpr.models import db, Users, VerifyKeys,getRequestData
 import binascii
 import os
 # from chirpr import getRequestData
@@ -32,15 +32,16 @@ def createAccount():
             errorMsg = 'Not a valid email'
 
         if not error:
-            #newUser = Users(username, password, email)
-            #db.session.add(newUser)
-	    #db.session.flush()
-            #db.session.commit()
             key = str(binascii.hexlify(os.urandom(24)))
-	    db.session.execute("INSERT INTO users (username, password, email, verified) VALUES (:username, :password, :email, :verified)",
-				{'username':username, 'password':password, 'email':email,'verified':False})		
-            db.session.execute("INSERT INTO verifykeys (email, emailed_key) VALUES (:email, :key)", {'email':email, 'key':key})
+            newUser = Users(username, password, email)
+            newKey = VerifyKeys(email, key)
+            db.session.add(newUser)
+            db.session.add(newKey)
             db.session.commit()
+	        # db.session.execute("INSERT INTO users (username, password, email, verified) VALUES (:username, :password, :email, :verified)",
+			# 	{'username':username, 'password':password, 'email':email,'verified':False})		
+            # db.session.execute("INSERT INTO verifykeys (email, emailed_key) VALUES (:email, :key)", {'email':email, 'key':key})
+            # db.session.commit()
             session['loggedIn'] = True
             session['username'] = username
             return jsonify({'status':'OK'})
