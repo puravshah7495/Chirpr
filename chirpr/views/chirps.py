@@ -62,7 +62,7 @@ def search():
 		if not 'timestamp' in data:
 			timestamp = datetime.utcnow()
 		else:
-			timestamp = datetime.utcfromtimestamp(float(data['timestamp'])
+			timestamp = datetime.utcfromtimestamp(float(data['timestamp']))
 		#timestamp = datetime.strptime(data['timestamp'], "%a, %d %b %Y %H:%M:%S %Z");
 
 		if 'limit' in data:
