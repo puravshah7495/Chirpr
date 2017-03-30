@@ -10,19 +10,20 @@ def addItem():
 	error = False
 	errorMsg = ''
 	try:
-		if session.get('loggedIn'):
-			username = session.get('username')
-		else:
+		if not session.get('loggedIn'):
 			error = True
 			errorMsg = 'Not logged in'
+			return jsonify({'status': 'error', 'error': errorMsg})
 
 		data = getRequestData(request)
 
 		if ('content' not in data):
 			error = True
 			errorMsg = 'Invalid request'
+			return jsonify({'status': 'error', 'error': errorMsg})
 
 		content = data['content']
+		username = session.get('username')
 
 		if (len('content') > 140):
 			return jsonify({'status':'error', 'error':'Chirp is too long'})
@@ -32,6 +33,7 @@ def addItem():
 		db.session.commit()
 		return jsonify({'status':'OK', 'id':chirp.id})
 	except Exception as e:
+		traceback.print_exc()
 		print e
 		return jsonify({'status':'error', 'error':errorMsg})
 
@@ -43,9 +45,10 @@ def getChirp(id):
 		if id is None:
 			return jsonify({'status':'error', 'error':'Invalid request'})
 
+		print id
 		chirp = Chirps.query.filter_by(id=id).first()
-
-		if not chirp:
+		print chirp
+		if chirp is None:
 			return jsonify({'status':'error', 'error':'ID not found'})
 		return jsonify({'status':'OK', 'item':chirp.toDict()})
 	except Exception as e:

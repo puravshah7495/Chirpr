@@ -18,6 +18,9 @@ class Users(db.Model):
 	email = db.Column(db.String(255), unique=True, nullable=False)
 	verified = db.Column(db.Boolean(), nullable=False, default=False)
 
+	#verifykey = db.relationship('VerifyKeys', backref='user', uselist=False)
+
+
 	def __init__(self, username, password, email):
 		self.username = username
 		self.password = password
@@ -46,13 +49,11 @@ class Chirps(db.Model):
 
 class VerifyKeys(db.Model):
 	__tablename__ = 'verifykeys'
-	email = db.Column(db.String(255), db.ForeignKey('users.email'), primary_key=True)
+	email = db.Column(db.String(255), primary_key=True)
 	emailed_key = db.Column(db.String(100))
 
-	user = db.relationship('Users', backref='verifykey')
-
-	def __init__(self, user_id, emailed_key):
-		self.user_id = user_id
+	def __init__(self, email, emailed_key):
+		self.email = email
 		self.emailed_key = emailed_key
 
 def create_app():

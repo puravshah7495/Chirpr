@@ -35,9 +35,13 @@ def createAccount():
             key = str(binascii.hexlify(os.urandom(24)))
             newUser = Users(username, password, email)
             newKey = VerifyKeys(email, key)
-            db.session.add(newUser)
-            db.session.add(newKey)
-            db.session.commit()
+	    newKey.user = newUser    
+	
+	    newKey.user = newUser
+	    db.session.add(newUser)
+	    db.session.commit()
+	    db.session.add(newKey)
+	    db.session.commit()
 	        # db.session.execute("INSERT INTO users (username, password, email, verified) VALUES (:username, :password, :email, :verified)",
 			# 	{'username':username, 'password':password, 'email':email,'verified':False})		
             # db.session.execute("INSERT INTO verifykeys (email, emailed_key) VALUES (:email, :key)", {'email':email, 'key':key})
@@ -65,9 +69,9 @@ def login():
         password = data['password']
 	print username
 	print password
-	user = db.session.execute("select * from users where username = :val" , {'val':username}).fetchone()
+	#user = db.session.execute("select * from users where username = :val" , {'val':username}).fetchone()
 	#print result
-        #user = Users.query.filter(Users.username == username).first()
+        user = Users.query.filter_by(username=username).first()
         print user
 	
 	if user is None:
@@ -104,15 +108,19 @@ def verify():
     email = data['email']
     key = data['key']
 
-    verification = db.session.execute("select * from verifykeys where email = :email" , {'email':email}).fetchone()
+    #verification = db.session.execute("select * from verifykeys where email = :email" , {'email':email}).fetchone()
+    verification = VerifyKeys.query.get(email)
+    user = Users.query.filter_by(email=email).first()
 
     if verification is None:
         return jsonify({'status': 'ERROR', 'error': 'Invalid Key'})
 
     if verification.emailed_key == key or key == "abracadabra":
-        db.session.execute("update users set verified = 1 where email = :email", {'email':email})
-        db.session.execute("delete from verifykeys where email = :email", {'email': email})
-        db.session.commit()
+        #db.session.execute("update users set verified = 1 where email = :email", {'email':email})
+        #db.session.execute("delete from verifykeys where email = :email", {'email': email})
+	user.verified = True
+	db.session.delete(verification)
+	db.session.commit()
         return jsonify({'status': 'OK'})
     else:
         return jsonify({'status': 'ERROR', 'error': 'Invalid Key'})
