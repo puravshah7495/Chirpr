@@ -24,12 +24,12 @@ def createAccount():
         email = data['email']
         password = data['password']
 
-        if len(password) < 8:
-            error = True
-            errorMsg = 'Password too short'
-        elif email.find('@') == -1:
-            error = True
-            errorMsg = 'Not a valid email'
+        # if len(password) < 8:
+        #     error = True
+        #     errorMsg = 'Password too short'
+        # elif email.find('@') == -1:
+        #     error = True
+        #     errorMsg = 'Not a valid email'
 
         if not error:
             users = mongo.db.users
@@ -38,7 +38,8 @@ def createAccount():
             user = users.find_one({'$or': [{'username':username}, {'email':email}]})
     
             if not user:
-                users.insert_one({'username': username, 'password': password, 'email': email, 'verified': False})
+                data['verified'] = True
+                users.insert_one(data)
                 verifykeys.insert_one({'email': email, 'emailed_key': key})
                 session['loggedIn'] = True
                 session['username'] = username
@@ -112,3 +113,24 @@ def verify():
         return jsonify({'status': 'OK'})
     else:
         return jsonify({'status': 'error', 'error': 'Invalid Key'})
+
+@account.route('/follow', methods=['POST'])
+def follow():
+    data = getRequestData(request)
+
+    if 'username' not in data:
+        return jsonify({'status':'error', 'error': 'Invalid Request'})
+    
+    if not session.get('loggedIn'):
+        return jsonify({'status':'error', 'error':'Not Logged In'})
+
+    username = data['username']
+
+    if 'follow' in data:
+        follow = data['follow']
+    else:
+        follow = True
+
+    users = mongo.db.users
+    users.update_one({'username':session.get('username')}, {'$push': {'following': username}})
+    
