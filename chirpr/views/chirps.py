@@ -37,7 +37,7 @@ def addItem():
 		print e
 		return jsonify({'status':'error', 'error':errorMsg})
 
-@chirpMod.route('/item/<int:id>', methods=['GET'])
+@chirpMod.route('/item/<id>', methods=['GET'])
 def getChirp(id):
 	error = False
 	errorMsg = ''
