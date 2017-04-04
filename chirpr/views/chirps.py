@@ -2,6 +2,7 @@ from flask import Blueprint, request, render_template, session, jsonify, redirec
 from chirpr.models import getRequestData
 from chirpr.database import mongo
 from datetime import datetime
+from bson.objectid import ObjectId
 import traceback
 
 chirpMod = Blueprint("chirpMod", __name__)
@@ -41,19 +42,16 @@ def addItem():
 def getChirp(id):
 	error = False
 	errorMsg = ''
-	try:
-		if id is None:
-			return jsonify({'status':'error', 'error':'Invalid request'})
+	if id is None:
+		return jsonify({'status':'error', 'error':'Invalid request'})
 
-		chirps = mongo.db.chirps
-		chirp = chirps.find_one({'_id': id})
-		print chirp
-		if chirp is None:
-			return jsonify({'status':'error', 'error':'ID not found'})
-		return jsonify({'status':'OK', 'item':chirp})
-	except Exception as e:
-		print e
-		return jsonify({'status':'error', 'error':errorMsg})
+	chirps = mongo.db.chirps
+	chirp = chirps.find_one({'_id': ObjectId(id)})
+	print chirp
+	if chirp is None:
+		return jsonify({'status':'error', 'error':'ID not found'})
+	chirp['_id'] = str(chirp['_id'])
+	return jsonify({'status':'OK', 'item':chirp})
 
 @chirpMod.route('/search', methods=['POST'])
 def search():
