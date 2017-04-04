@@ -1,11 +1,12 @@
 from flask import Flask, render_template
-from models import create_app, db
+
+app = Flask(__name__)
+app.config.from_pyfile('app.cfg')
+
 from views.accounts import account
 from views.chirps import chirpMod
-
-app = create_app()
-app.app_context().push()
-db.create_all(app=app)
+from flask_pymongo import PyMongo
+from database import mongo
 
 app.register_blueprint(account)
 app.register_blueprint(chirpMod)

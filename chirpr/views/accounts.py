@@ -1,8 +1,8 @@
 from flask import Blueprint, request, render_template, session, jsonify, redirect
-from chirpr.models import db, Users, VerifyKeys,getRequestData
+from chirpr.models import getRequestData
 import binascii
 import os
-# from chirpr import getRequestData
+from chirpr.database import mongo
 
 account = Blueprint("account", __name__)
 
@@ -15,10 +15,10 @@ def createAccount():
         errorMsg = ''
 
         data = getRequestData(request)
-	print data
+    	print data
         if 'username' not in data or 'password' not in data or 'email' not in data:
-            error = True
             errorMsg = 'Invalid request'
+            return jsonify({'status':'error', 'error':errorMsg})
 
         username = data['username']
         email = data['email']
@@ -27,30 +27,27 @@ def createAccount():
         if len(password) < 8:
             error = True
             errorMsg = 'Password too short'
-	elif email.find('@') == -1:
+        elif email.find('@') == -1:
             error = True
             errorMsg = 'Not a valid email'
 
         if not error:
+            users = mongo.db.users
+            verifykeys = mongo.db.verifykeys
             key = str(binascii.hexlify(os.urandom(24)))
-            newUser = Users(username, password, email)
-            newKey = VerifyKeys(email, key)
-	    newKey.user = newUser    
-	
-	    newKey.user = newUser
-	    db.session.add(newUser)
-	    db.session.commit()
-	    db.session.add(newKey)
-	    db.session.commit()
-	        # db.session.execute("INSERT INTO users (username, password, email, verified) VALUES (:username, :password, :email, :verified)",
-			# 	{'username':username, 'password':password, 'email':email,'verified':False})		
-            # db.session.execute("INSERT INTO verifykeys (email, emailed_key) VALUES (:email, :key)", {'email':email, 'key':key})
-            # db.session.commit()
-            session['loggedIn'] = True
-            session['username'] = username
-            return jsonify({'status':'OK'})
+            user = users.find_one({'$or': [{'username':username}, {'email':email}]})
+    
+            if not user:
+                users.insert_one({'username': username, 'password': password, 'email': email, 'verified': False})
+                verifykeys.insert_one({'email': email, 'emailed_key': key})
+                session['loggedIn'] = True
+                session['username'] = username
+                return jsonify({'status':'OK'})
+            else:
+                errorMsg = "Username or email already exists"
+                return jsonify({'status': 'error', 'error': errorMsg})
         else:
-            return jsonify({'status':'ERROR', 'error': errorMsg})
+            return jsonify({'status':'error', 'error': errorMsg})
 
 @account.route('/login', methods=['GET','POST'])
 def login():
@@ -62,32 +59,24 @@ def login():
 
         data = getRequestData(request)
         if 'username' not in data or 'password' not in data:
-            error = True
             errorMsg = "Invalid request"
+            return jsonify({'status':'error', 'error':errorMsg})
         
         username = data['username']
         password = data['password']
-	print username
-	print password
-	#user = db.session.execute("select * from users where username = :val" , {'val':username}).fetchone()
-	#print result
-        user = Users.query.filter_by(username=username).first()
-        print user
-	
-	if user is None:
+
+        user = mongo.db.users.find_one({'username':username,'password':password});
+        
+        if not user:
             error = True
             errorMsg = "Invalid username or password"
-	elif not user.password == password:
-	    error = True
-	    errorMsg = "Invalid username or password"
         
-	if not error:
-            print username
+        if not error:
             session['loggedIn'] = True
             session['username'] = username
             return jsonify({'status': 'OK'})
         else:
-            return jsonify({'status': 'ERROR', 'error': errorMsg})
+            return jsonify({'status': 'error', 'error': errorMsg})
 
 @account.route('/logout', methods=['POST'])
 def logout():
@@ -96,31 +85,30 @@ def logout():
         session.pop('username', None)
         return jsonify({'status': 'OK'})
     else:
-        return jsonify({'status': 'ERROR', error: 'Woops, Something went wrong!'})
+        return jsonify({'status': 'error', error: 'Woops, Something went wrong!'})
 
 @account.route('/verify', methods=['POST'])
 def verify():
     data = getRequestData(request)
     
     if 'email' not in data or 'key' not in data:
-        return jsonify({'status': 'ERROR', 'error':'Invalid request'})
+        return jsonify({'status': 'error', 'error':'Invalid request'})
 
     email = data['email']
     key = data['key']
 
-    #verification = db.session.execute("select * from verifykeys where email = :email" , {'email':email}).fetchone()
-    verification = VerifyKeys.query.get(email)
-    user = Users.query.filter_by(email=email).first()
+    verifykeys = mongo.db.verifykeys
+    users = mongo.db.users
+
+    verification = verifykeys.find_one({'email':email})
 
     if verification is None:
-        return jsonify({'status': 'ERROR', 'error': 'Invalid Key'})
+        return jsonify({'status': 'error', 'error': 'Invalid Key'})
 
-    if verification.emailed_key == key or key == "abracadabra":
-        #db.session.execute("update users set verified = 1 where email = :email", {'email':email})
-        #db.session.execute("delete from verifykeys where email = :email", {'email': email})
-	user.verified = True
-	db.session.delete(verification)
-	db.session.commit()
+    print verification
+    if verification['emailed_key'] == key or key == "abracadabra":
+        verifykeys.delete_one({'email':email})
+        users.update_one({'email':email}, {'$set': {'verified': True}})
         return jsonify({'status': 'OK'})
     else:
-        return jsonify({'status': 'ERROR', 'error': 'Invalid Key'})
+        return jsonify({'status': 'error', 'error': 'Invalid Key'})
