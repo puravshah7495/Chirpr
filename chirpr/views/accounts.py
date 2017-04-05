@@ -134,3 +134,43 @@ def follow():
     users = mongo.db.users
     users.update_one({'username':session.get('username')}, {'$push': {'following': username}})
     
+@account.route('/user/<username>')
+def getUser(username):
+    users = mongo.db.users
+    user = users.find_one({'username':username}, {'_id':0, 'email':1, 'following': 1})
+    if not user:
+        return jsonify({'status':'error', 'error':'User not found'})
+    
+    if 'following' not in user:
+        followingCount = 0
+    else:
+        followingCount = len(user['following'])
+
+    followerCount = users.find({'following': {'$elemMatch': {'$eq': username}}}).count()
+
+    user['following'] = followingCount
+    user['followers'] = followerCount
+
+    return jsonify({'status':'OK', 'user': user})
+
+@account.route('/user/<username>/following')
+def getFollowing(username):
+    users = mongo.db.users
+    result = []
+
+    user = users.find_one({'username':username})
+    if 'following' in user:
+        result = user['following']
+
+    return jsonify({'status':'OK', 'users': result})
+
+@account.route('/user/<username>/followers')
+def getFollowers(username):
+    users = mongo.db.users
+    result = []
+
+    followers = users.find({'following': {'$elemMatch': {'$eq': username}}})
+    for user in followers:
+        result.append(user['username'])
+
+    return jsonify({'status':'OK', 'users': result})
