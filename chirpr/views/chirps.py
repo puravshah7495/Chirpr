@@ -66,16 +66,19 @@ def deleteChirp(id):
 def search():
 	error = False
 	errorMsg = ''
+
 	try:
+		chirps = mongo.db.chirps
 		data = getRequestData(request)
 		print data
 		var query = { '$and' : [] }
+		chirps.createIndex({ context: 'text' })
 
 		if not 'timestamp' in data:
 			timestamp = datetime.utcnow()
 		else:
 			timestamp = datetime.utcfromtimestamp(float(data['timestamp']))
-		#timestamp = datetime.strptime(data['timestamp'], "%a, %d %b %Y %H:%M:%S %Z");
+
 		query["$and"].push({"timestamp" : {'$lte' : timestamp}})
 
 		if 'limit' in data:
@@ -83,17 +86,21 @@ def search():
 		else:
 			limit = 25
 
-		# if 'q' in data:
-		# 	searchquery = data['q']
-		# else:
-		# 	searchquery = ''
+		if 'q' in data:
+			searchquery = data['q']
+			query["$and"].push({"$text" : {"$search" : searchquery}})
 
 		if 'username' in data:
 			username = data['username']
 			query["$and"].push({"username" : {"$eq" : username}})
 
-		# chirps = Chirps.query.filter(Chirps.timestamp <= timestamp).order_by(Chirps.timestamp.desc()).limit(limit).all()
-		chirps = mongo.db.chirps
+		if 'following' in data:
+			if data['following'] is True or data['following'] is None:
+				user = mongo.db.users.find_one(session.get(username))
+				if 'following' not in user:
+					user['following'] = []
+				query["$and"].push({"following" : {"$in" : user['following']}})
+				
 		query = chirps.find(query).sort([('timestamp',-1)]).limit(limit) 
 		chirpList = []
 		for chirp in query:
