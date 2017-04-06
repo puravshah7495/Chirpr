@@ -53,6 +53,15 @@ def getChirp(id):
 	chirp['_id'] = str(chirp['_id'])
 	return jsonify({'status':'OK', 'item':chirp})
 
+@chirpMod.route('/item/<id>', methods=['DELETE'])
+def deleteChirp(id):
+	error = False
+	errorMsg = ''
+	if id is None:
+		return jsonify({'status':'error', 'error':'Invalid request'})
+	chirp = mongo.db.chirps.delete_one({'_id':ObjectId(id)})
+	return jsonify({'status':'OK'})
+
 @chirpMod.route('/search', methods=['POST'])
 def search():
 	error = False
@@ -60,20 +69,32 @@ def search():
 	try:
 		data = getRequestData(request)
 		print data
+		var query = { '$and' : [] }
+
 		if not 'timestamp' in data:
 			timestamp = datetime.utcnow()
 		else:
 			timestamp = datetime.utcfromtimestamp(float(data['timestamp']))
 		#timestamp = datetime.strptime(data['timestamp'], "%a, %d %b %Y %H:%M:%S %Z");
+		query["$and"].push({"timestamp" : {'$lte' : timestamp}})
 
 		if 'limit' in data:
 			limit = data['limit']
 		else:
 			limit = 25
 
+		# if 'q' in data:
+		# 	searchquery = data['q']
+		# else:
+		# 	searchquery = ''
+
+		if 'username' in data:
+			username = data['username']
+			query["$and"].push({"username" : {"$eq" : username}})
+
 		# chirps = Chirps.query.filter(Chirps.timestamp <= timestamp).order_by(Chirps.timestamp.desc()).limit(limit).all()
 		chirps = mongo.db.chirps
-		query = chirps.find({'timestamp': {'$lte': timestamp}}).sort([('timestamp',-1)]).limit(limit) 
+		query = chirps.find(query).sort([('timestamp',-1)]).limit(limit) 
 		chirpList = []
 		for chirp in query:
 			chirp['_id'] = str(chirp['_id'])
