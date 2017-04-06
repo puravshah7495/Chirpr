@@ -97,7 +97,8 @@ def search():
 		query = chirps.find(query).sort([('timestamp',-1)]).limit(limit) 
 		chirpList = []
 		for chirp in query:
-			chirp['_id'] = str(chirp['_id'])
+			chirp['id'] = str(chirp['_id'])
+			chirp.pop('_id', None)
 			chirpList.append(chirp)
 		return jsonify({'status':'OK', 'items':chirpList})
 	except Exception as e:
