@@ -71,35 +71,38 @@ def search():
 		chirps = mongo.db.chirps
 		data = getRequestData(request)
 		print data
-		var query = { '$and' : [] }
-		chirps.createIndex({ context: 'text' })
+		query = { '$and' : [] }
+		chirps.createIndex('context')
 
 		if not 'timestamp' in data:
 			timestamp = datetime.utcnow()
 		else:
 			timestamp = datetime.utcfromtimestamp(float(data['timestamp']))
 
-		query["$and"].push({"timestamp" : {'$lte' : timestamp}})
+		query["$and"].append({"timestamp" : {'$lte' : timestamp}})
 
 		if 'limit' in data:
-			limit = data['limit']
+			if data['limit'] > 100:
+				limit = 100
+			else:
+				limit = data['limit']
 		else:
 			limit = 25
 
 		if 'q' in data:
 			searchquery = data['q']
-			query["$and"].push({"$text" : {"$search" : searchquery}})
+			query["$and"].append({"$text" : {"$search" : searchquery}})
 
 		if 'username' in data:
 			username = data['username']
-			query["$and"].push({"username" : {"$eq" : username}})
+			query["$and"].append({"username" : {"$eq" : username}})
 
 		if 'following' in data:
 			if data['following'] is True or data['following'] is None:
 				user = mongo.db.users.find_one(session.get(username))
 				if 'following' not in user:
 					user['following'] = []
-				query["$and"].push({"following" : {"$in" : user['following']}})
+				query["$and"].append({"following" : {"$in" : user['following']}})
 				
 		query = chirps.find(query).sort([('timestamp',-1)]).limit(limit) 
 		chirpList = []
