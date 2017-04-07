@@ -133,6 +133,7 @@ def follow():
 
     users = mongo.db.users
     users.update_one({'username':session.get('username')}, {'$push': {'following': username}})
+    return jsonify({'status':'OK'})
     
 @account.route('/user/<username>')
 def getUser(username):

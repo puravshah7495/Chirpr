@@ -3,6 +3,7 @@ from chirpr.models import getRequestData
 from chirpr.database import mongo
 from datetime import datetime
 from bson.objectid import ObjectId
+import pymongo
 import traceback
 
 chirpMod = Blueprint("chirpMod", __name__)
@@ -72,7 +73,7 @@ def search():
 		data = getRequestData(request)
 		print data
 		query = { '$and' : [] }
-		chirps.createIndex('context')
+		chirps.create_index([('content', pymongo.TEXT)])
 
 		if not 'timestamp' in data:
 			timestamp = datetime.utcnow()
@@ -82,10 +83,7 @@ def search():
 		query["$and"].append({"timestamp" : {'$lte' : timestamp}})
 
 		if 'limit' in data:
-			if data['limit'] > 100:
-				limit = 100
-			else:
-				limit = data['limit']
+			limit = data['limit']
 		else:
 			limit = 25
 
@@ -97,12 +95,13 @@ def search():
 			username = data['username']
 			query["$and"].append({"username" : {"$eq" : username}})
 
-		if 'following' in data:
-			if data['following'] is True or data['following'] is None:
-				user = mongo.db.users.find_one(session.get(username))
-				if 'following' not in user:
-					user['following'] = []
-				query["$and"].append({"following" : {"$in" : user['following']}})
+		if session.get('loggedIn') is True:
+			if 'following' in data:
+				if data['following'] is True or data['following'] is None:
+					user = mongo.db.users.find_one({"username" : {"$eq" : session.get('username')}})
+					if 'following' not in user:
+						user['following'] = []
+					query["$and"].append({"following" : {"$in" : user['following']}})
 				
 		query = chirps.find(query).sort([('timestamp',-1)]).limit(limit) 
 		chirpList = []
