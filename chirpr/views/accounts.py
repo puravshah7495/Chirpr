@@ -1,8 +1,7 @@
 from flask import Blueprint, request, render_template, session, jsonify, redirect
-from chirpr.models import getRequestData
 import binascii
 import os
-from chirpr.database import mongo
+from chirpr.database import mongo, getRequestData
 
 account = Blueprint("account", __name__)
 

@@ -1,6 +1,5 @@
 from flask import Blueprint, request, render_template, session, jsonify, redirect
-from chirpr.models import getRequestData
-from chirpr.database import mongo
+from chirpr.database import mongo, getRequestData
 from datetime import datetime
 from bson.objectid import ObjectId
 import pymongo
