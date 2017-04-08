@@ -10,7 +10,6 @@
       with_items:
         - git
         - nginx
-        - mysql-server
         - python-pip
         - python-dev
     - name: clone project
@@ -22,8 +21,8 @@
         depth: 1
     - name: curl node
       shell: 'curl -sL https://deb.nodesource.com/setup_7.x | sudo -E bash -'
-      apt: name={{ item }} state=present
     - name: Install nodejs
+      apt: name={{ item }} state=present
       with_items:
         - nodejs
         - build-essential 

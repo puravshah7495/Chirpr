@@ -22,7 +22,7 @@
       pip:
         name: pymysql
         virtualenv: /home/notdecaf/Chirpr/venv
-    - name: Install pika
+    - name: Install flask-pymongo
       pip:
-        name: pika
+        name: flask-pymongo
         virtualenv: /home/notdecaf/Chirpr/venv
