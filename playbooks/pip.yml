@@ -1,4 +1,3 @@
----
 - hosts: chirpr
   become: yes
   become_method: sudo
@@ -14,15 +13,7 @@
       pip:
         name: uwsgi
         virtualenv: /home/notdecaf/Chirpr/venv
-    - name: Install SQLAlchemy
-      pip:
-        name: flask-sqlalchemy
-        virtualenv: /home/notdecaf/Chirpr/venv
-    - name: Install pymysql
-      pip:
-        name: pymysql
-        virtualenv: /home/notdecaf/Chirpr/venv
-    - name: Install flask-pymongo
+    - name: Install pika
       pip:
         name: flask-pymongo
         virtualenv: /home/notdecaf/Chirpr/venv
