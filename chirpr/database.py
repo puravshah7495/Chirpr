@@ -12,4 +12,4 @@ mongo = PyMongo(app)
 
 with app.app_context():
     chirps = mongo.db.chirps
-    mongo.db.chirps.create_index([('content', pymongo.TEXT), ('timestamp',pymongo.ASCENDING)])
+    mongo.db.chirps.create_index([('content', pymongo.TEXT), ('username', pymongo.TEXT),('timestamp',pymongo.ASCENDING)])
