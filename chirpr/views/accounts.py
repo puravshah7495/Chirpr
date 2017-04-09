@@ -101,6 +101,7 @@ def verify():
     users = mongo.db.users
 
     verification = verifykeys.find_one({'email':email})
+    user = users.find_one({'email':email})
 
     if verification is None:
         return jsonify({'status': 'error', 'error': 'Invalid Key'})
@@ -108,7 +109,7 @@ def verify():
     print verification
     if verification['emailed_key'] == key or key == "abracadabra":
         verifykeys.delete_one({'email':email})
-        users.update_one({'email':email}, {'$set': {'verified': True}})
+        users.update({'_id':user['_id']}, {'$set': {'verified': True}})
         return jsonify({'status': 'OK'})
     else:
         return jsonify({'status': 'error', 'error': 'Invalid Key'})
@@ -131,7 +132,8 @@ def follow():
         follow = True
 
     users = mongo.db.users
-    users.update_one({'username':session.get('username')}, {'$push': {'following': username}})
+    user = users.find_one({'username':session.get('username')})
+    users.update_one({'_id':user['_id']}, {'$push': {'following': username}})
     return jsonify({'status':'OK'})
     
 @account.route('/user/<username>')
