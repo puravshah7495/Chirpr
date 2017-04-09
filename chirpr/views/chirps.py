@@ -71,8 +71,7 @@ def search():
 	data = getRequestData(request)
 	print data
 	query = { '$and' : [] }
-	chirps.create_index([('content', pymongo.TEXT)])
-
+	
 	if not 'timestamp' in data:
 		timestamp = datetime.utcnow()
 	else:
