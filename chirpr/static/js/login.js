@@ -8,6 +8,7 @@ $(function() {
             password: password
         }, function(data, status) {
             if (status === "success") {
+                console.log('success')
                 if (data.status === "OK") {
                     window.location="/"
                 } else {

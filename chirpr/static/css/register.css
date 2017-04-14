@@ -1,0 +1,15 @@
+.container {
+    height: 100%;
+}
+
+.row {
+    margin-top: 30%;
+}
+
+.form_container{
+    border: 1px solid black;
+    background-color: white;
+    border-radius: 10px;
+    text-align: center;
+    padding: 20px;
+}

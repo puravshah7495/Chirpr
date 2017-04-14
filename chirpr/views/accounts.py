@@ -37,8 +37,11 @@ def createAccount():
             user = users.find_one({'$or': [{'username':username}, {'email':email}]})
     
             if not user:
-                data['verified'] = True
-                users.insert_one(data)
+                userData = {}
+                for key in data:
+                    userData[key] = data[key]
+                userData['verified'] = False
+                users.insert_one(userData)
                 verifykeys.insert_one({'email': email, 'emailed_key': key})
                 session['loggedIn'] = True
                 session['username'] = username

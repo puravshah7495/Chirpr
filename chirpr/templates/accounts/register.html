@@ -1,24 +1,28 @@
-<html>
-    <head>
-        <title>Register</title>
-        <script src="{{ url_for('static', filename='bower_components/jquery/dist/jquery.min.js') }}"></script>
-        <script src="{{ url_for('static', filename='js/register.js') }}"></script>
-    </head>
-    <body>
-        <div id="errors">
-            
+{% extends 'index.html' %}
+{% block head %}
+<link href="{{ url_for('static', filename='css/register.css') }}" rel="stylesheet"/>
+<script src="{{ url_for('static', filename='js/register.js') }}"></script>
+{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-6 col-md-offset-3 form_container">
+            <div id="errors">
+        
+            </div>
+            <form id="register_form" method="POST">
+                <label for="username">Username: </label>
+                <input type="text" name="username" value="" id="username">
+                <br />
+                <label for="email">Email: </label>
+                <input type="text" name="email" value="" id="email">
+                <br />
+                <label for="password">Password: </label>
+                <input type="password" name="password" value="" id="password">
+                <br />
+                <input type="submit" value="Submit">
+            </form>
         </div>
-        <form id="register_form" method="POST">
-            <label for="username">Username: </label>
-            <input type="text" name="username" value="" id="username">
-            <br />
-            <label for="email">Email: </label>
-            <input type="text" name="email" value="" id="email">
-            <br />
-            <label for="password">Password: </label>
-            <input type="password" name="password" value="" id="password">
-            <br />
-            <input type="submit" value="Submit">
-        </form>
-    </body>
-</html>
+    </div>
+</div>
+{% endblock %}
