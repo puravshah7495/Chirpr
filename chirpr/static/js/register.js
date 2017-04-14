@@ -11,7 +11,7 @@ $(function() {
         function(data, status) {
             if (status === "success") {
                 if (data.status === "OK") {
-                    window.location="/"
+                    window.location="/user/"+username;
                 } else {
                     $("#errors").text(data.error); 
                 }
