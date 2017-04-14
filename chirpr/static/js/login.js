@@ -10,7 +10,7 @@ $(function() {
             if (status === "success") {
                 console.log('success')
                 if (data.status === "OK") {
-                    window.location="/"
+                    window.location="/user/"+username
                 } else {
                     $("#errors").text(data.error); 
                 }

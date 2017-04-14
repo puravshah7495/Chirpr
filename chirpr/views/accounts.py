@@ -156,7 +156,12 @@ def getUser(username):
     if request.method == 'GET':
         user['followingCount'] = followingCount
         user['followerCount'] = followerCount
-        return render_template('accounts/profile.html', user=user)
+        
+        isUser = False
+        if session.get('loggedIn') and session.get('username') == user['username']:
+            isUser = True
+
+        return render_template('accounts/profile.html', user=user, isUser=isUser)
     else:
         # if not user:
         #     return jsonify({'status':'error', 'error':'User not found'})
