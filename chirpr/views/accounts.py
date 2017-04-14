@@ -1,4 +1,4 @@
-from flask import Blueprint, request, render_template, session, jsonify, redirect
+from flask import Blueprint, request, render_template, session, jsonify, redirect, abort
 import binascii
 import os
 from chirpr.database import mongo, getRequestData
@@ -139,24 +139,33 @@ def follow():
     users.update_one({'_id':user['_id']}, {'$push': {'following': username}})
     return jsonify({'status':'OK'})
     
-@account.route('/user/<username>')
+@account.route('/user/<username>', methods=['GET','POST'])
 def getUser(username):
     users = mongo.db.users
-    user = users.find_one({'username':username}, {'_id':0, 'email':1, 'following': 1})
-    if not user:
-        return jsonify({'status':'error', 'error':'User not found'})
-    
+    user = users.find_one({'username':username}, {'_id':0})
+    if  not user:
+            abort(404)
+
     if 'following' not in user:
-        followingCount = 0
+            followingCount = 0
     else:
         followingCount = len(user['following'])
-
+    
     followerCount = users.find({'following': {'$elemMatch': {'$eq': username}}}).count()
 
-    user['following'] = followingCount
-    user['followers'] = followerCount
+    if request.method == 'GET':
+        user['followingCount'] = followingCount
+        user['followerCount'] = followerCount
+        return render_template('accounts/profile.html', user=user)
+    else:
+        # if not user:
+        #     return jsonify({'status':'error', 'error':'User not found'})
+        result = {}
+        result['following'] = followingCount
+        result['followers'] = followerCount
+        result['email'] = user['email']
 
-    return jsonify({'status':'OK', 'user': user})
+        return jsonify({'status':'OK', 'user': result})
 
 @account.route('/user/<username>/following')
 def getFollowing(username):
