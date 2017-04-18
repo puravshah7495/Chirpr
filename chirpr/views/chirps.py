@@ -18,25 +18,30 @@ def addItem():
 		return jsonify({'status': 'error', 'error': errorMsg})
 
 	data = getRequestData(request)
+	query = {}
 
 	if 'content' not in data:
 		error = True
 		errorMsg = 'Invalid request'
 		return jsonify({'status': 'error', 'error': errorMsg})
 
-	content = data['content']
-	username = session.get('username')
+	if 'parent' in data:
+		query['parent'] = data['parent']
 
-	if (len('content') > 140):
+	if 'media' in data:
+		query['parent'] = data['media']
+
+	content = data['content']
+	if (len(content) > 140):
 		return jsonify({'status':'error', 'error':'Chirp is too long'})
 
+	query['content'] = content
+	query['username'] = session.get('username')
+	query['timestamp'] = datetime.utcnow()
+
 	chirps = mongo.db.chirps
-	chirp = chirps.insert_one({'content': content,'username':username,'timestamp':datetime.utcnow()})
+	chirp = chirps.insert_one(query)
 	return jsonify({'status':'OK', 'id':str(chirp.inserted_id)})
-	# except Exception as e:
-	# 	traceback.print_exc()
-	# 	print e
-	# 	return jsonify({'status':'error', 'error':errorMsg})
 
 @chirpMod.route('/item/<id>', methods=['GET'])
 def getChirp(id):
@@ -47,7 +52,6 @@ def getChirp(id):
 
 	chirps = mongo.db.chirps
 	chirp = chirps.find_one({'_id': ObjectId(id)})
-	print chirp
 	if chirp is None:
 		return jsonify({'status':'error', 'error':'ID not found'})
 	chirp['_id'] = str(chirp['_id'])
@@ -60,6 +64,7 @@ def deleteChirp(id):
 	if id is None:
 		return jsonify({'status':'error', 'error':'Invalid request'})
 	chirp = mongo.db.chirps.delete_one({'_id':ObjectId(id)})
+	# ADD CODE TO DELETE ALL THE ASSOCIATED MEDIA FROM CEPH OR WHATEVER
 	return jsonify({'status':'OK'})
 
 @chirpMod.route('/search', methods=['POST'])
