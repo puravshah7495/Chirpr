@@ -25,13 +25,13 @@ def addItem():
 		return jsonify({'status': 'error', 'error': errorMsg})
 
 	content = data['content']
-	username = session.get('username')
+	userId = session.get('userId')
 
 	if (len('content') > 140):
 		return jsonify({'status':'error', 'error':'Chirp is too long'})
 
 	chirps = mongo.db.chirps
-	chirp = chirps.insert_one({'content': content,'username':username,'timestamp':datetime.utcnow()})
+	chirp = chirps.insert_one({'content': content,'user_id':userId,'timestamp':datetime.utcnow()})
 	return jsonify({'status':'OK', 'id':str(chirp.inserted_id)})
 	# except Exception as e:
 	# 	traceback.print_exc()
@@ -68,6 +68,7 @@ def search():
 	errorMsg = ''
 
 	chirps = mongo.db.chirps
+	users = mongo.db.users
 	data = getRequestData(request)
 	print data
 	query = { '$and' : [] }
@@ -90,7 +91,8 @@ def search():
 
 	if 'username' in data:
 		username = data['username']
-		query["$and"].append({"username" : {"$eq" : username}})
+		user = users.find_one({'username': username})
+		query["$and"].append({"user_id" : {"$eq" : user['_id']}})
 
 	if session.get('loggedIn') is True:
 		if 'following' in data:
