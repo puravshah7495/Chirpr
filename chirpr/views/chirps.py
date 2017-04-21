@@ -18,6 +18,7 @@ def addItem():
 		return jsonify({'status': 'error', 'error': errorMsg})
 
 	data = getRequestData(request)
+	chirps = mongo.db.chirps
 	query = {}
 
 	if 'content' not in data:
@@ -25,11 +26,8 @@ def addItem():
 		errorMsg = 'Invalid request'
 		return jsonify({'status': 'error', 'error': errorMsg})
 
-	if 'parent' in data:
-		query['parent'] = data['parent']
-
 	if 'media' in data:
-		query['parent'] = data['media']
+		query['media'] = data['media']
 
 	content = data['content']
 	if (len(content) > 140):
@@ -38,9 +36,22 @@ def addItem():
 	query['content'] = content
 	query['user_id'] = session.get('userId')
 	query['timestamp'] = datetime.utcnow()
+	query['retweets'] = 0
+	query['replies'] = []
 
-	chirps = mongo.db.chirps
+	if 'parent' in data:
+		parent = data['parent']
+		query['parent'] = parent
+
 	chirp = chirps.insert_one(query)
+
+	if content[:3].capitalize() == "RT ":
+		chirps.find({"content" : content})
+		chirps.update({"content" : content}, {"$inc" : "retweets"})
+
+	if parent:
+		chirps.update({'_id': parent}, {'$push': {'replies': chirp['_id']}})
+
 	return jsonify({'status':'OK', 'id':str(chirp.inserted_id)})
 
 @chirpMod.route('/item/<id>', methods=['GET'])
@@ -75,7 +86,7 @@ def search():
 	chirps = mongo.db.chirps
 	users = mongo.db.users
 	data = getRequestData(request)
-	print data
+
 	query = { '$and' : [] }
 	
 	if not 'timestamp' in data:
@@ -99,6 +110,23 @@ def search():
 		user = users.find_one({'username': username})
 		query["$and"].append({"user_id" : {"$eq" : user['_id']}})
 
+	if 'rank' in data:
+		rank = data['rank']
+
+	else:
+		rank = 'interest'
+
+	if 'parent' in data:
+		parent = data['parent']
+		query["$and"].append({"parent" : {"$eq" : parent}})
+
+	if 'replies' in data:
+		replies = data['replies']
+	else:
+		replies = True
+
+	# get all tweets that have x tweet as parent
+
 	if session.get('loggedIn') is True:
 		if 'following' in data:
 			if data['following'] is True or data['following'] is None:
@@ -107,13 +135,15 @@ def search():
 					user['following'] = []
 				query["$and"].append({"following" : {"$in" : user['following']}})
 			
-	query = chirps.find(query).sort([('timestamp',-1)]).limit(limit) 
+	query = chirps.find(query).limit(limit)
+	# rank algorithm
+	# .sort([('timestamp',-1)])
+
+	# get all tweets with this id as the parent
+
 	chirpList = []
 	for chirp in query:
 		chirp['id'] = str(chirp['_id'])
 		chirp.pop('_id', None)
 		chirpList.append(chirp)
 	return jsonify({'status':'OK', 'items':chirpList})
-	# except Exception as e:
-	# 	print traceback.print_exc()
-	# 	return jsonify({'status':'error', 'error':errorMsg})
