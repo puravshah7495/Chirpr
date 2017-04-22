@@ -38,6 +38,7 @@ def addItem():
 	query['timestamp'] = datetime.utcnow()
 	query['retweets'] = 0
 	query['replies'] = []
+	query['likes'] = []
 
 	if 'parent' in data:
 		parent = data['parent']
@@ -78,6 +79,28 @@ def deleteChirp(id):
 	# ADD CODE TO DELETE ALL THE ASSOCIATED MEDIA FROM CEPH OR WHATEVER
 	return jsonify({'status':'OK'})
 
+@chirpMod.route('/item/<id>/like', methods=['POST'])
+def like(id):
+	error = False
+	errorMsg = ''
+	if not session.get('loggedIn'):
+		error = True
+		errorMsg = 'Not logged in'
+		return jsonify({'status': 'error', 'error': errorMsg})
+
+	data = getRequestData(request)
+	if 'like' not in data:
+		return jsonify({'status' : 'error'})
+
+	chirps = mongo.db.chirps
+	users = mongo.db.users
+
+	userId = session.get('userId')
+	chirps.update({'_id' : ObjectId(id)}, {"$push" : {"likes" : userId}})
+	users.update({'_id' : ObjectId(userId)}, {'$push' : {'likes' : id}})
+	return jsonify({'status' : 'OK'})
+
+
 @chirpMod.route('/search', methods=['POST'])
 def search():
 	error = False
@@ -112,7 +135,6 @@ def search():
 
 	if 'rank' in data:
 		rank = data['rank']
-
 	else:
 		rank = 'interest'
 
@@ -124,8 +146,6 @@ def search():
 		replies = data['replies']
 	else:
 		replies = True
-
-	# get all tweets that have x tweet as parent
 
 	if session.get('loggedIn') is True:
 		if 'following' in data:
