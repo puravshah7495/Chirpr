@@ -7,163 +7,193 @@ import traceback
 
 chirpMod = Blueprint("chirpMod", __name__)
 
+
 @chirpMod.route('/additem', methods=['POST'])
 def addItem():
-	error = False
-	errorMsg = ''
-	
-	if not session.get('loggedIn'):
-		error = True
-		errorMsg = 'Not logged in'
-		return jsonify({'status': 'error', 'error': errorMsg})
+    error = False
+    errorMsg = ''
 
-	data = getRequestData(request)
-	chirps = mongo.db.chirps
-	query = {}
+    if not session.get('loggedIn'):
+        error = True
+        errorMsg = 'Not logged in'
+        return jsonify({'status': 'error', 'error': errorMsg})
 
-	if 'content' not in data:
-		error = True
-		errorMsg = 'Invalid request'
-		return jsonify({'status': 'error', 'error': errorMsg})
+    data = getRequestData(request)
+    chirps = mongo.db.chirps
+    query = {}
 
-	if 'media' in data:
-		query['media'] = data['media']
+    if 'content' not in data:
+        error = True
+        errorMsg = 'Invalid request'
+        return jsonify({'status': 'error', 'error': errorMsg})
 
-	content = data['content']
-	if (len(content) > 140):
-		return jsonify({'status':'error', 'error':'Chirp is too long'})
+    if 'media' in data:
+        query['media'] = data['media']
 
-	query['content'] = content
-	query['user_id'] = session.get('userId')
-	query['timestamp'] = datetime.utcnow()
-	query['retweets'] = 0
-	query['replies'] = []
-	query['likes'] = []
+    content = data['content']
+    if (len(content) > 140):
+        return jsonify({'status': 'error', 'error': 'Chirp is too long'})
 
-	if 'parent' in data:
-		parent = data['parent']
-		query['parent'] = parent
+    query['content'] = content
+    query['user_id'] = session.get('userId')
+    query['timestamp'] = datetime.utcnow()
+    query['retweets'] = 0
+    query['replies'] = []
+    query['likes'] = []
 
-	chirp = chirps.insert_one(query)
+    if 'parent' in data:
+        parent = data['parent']
+        query['parent'] = parent
 
-	if content[:3].capitalize() == "RT ":
-		chirps.find({"content" : content})
-		chirps.update({"content" : content}, {"$inc" : "retweets"})
+    chirp = chirps.insert_one(query)
 
-	if parent:
-		chirps.update({'_id': parent}, {'$push': {'replies': chirp['_id']}})
+    if content[:3].capitalize() == "RT ":
+        chirps.find({"content": content})
+        chirps.update_many({"content": content}, {"$inc": {
+            "retweets": 1,
+        }})
 
-	return jsonify({'status':'OK', 'id':str(chirp.inserted_id)})
+    if parent:
+        chirps.update_one({'_id': parent}, {'$push': {'replies': chirp['_id']}})
+
+    return jsonify({'status': 'OK', 'id': str(chirp.inserted_id)})
+
 
 @chirpMod.route('/item/<id>', methods=['GET'])
 def getChirp(id):
-	error = False
-	errorMsg = ''
-	if id is None:
-		return jsonify({'status':'error', 'error':'Invalid request'})
+    error = False
+    errorMsg = ''
+    if id is None:
+        return jsonify({'status': 'error', 'error': 'Invalid request'})
 
-	chirps = mongo.db.chirps
-	chirp = chirps.find_one({'_id': ObjectId(id)})
-	if chirp is None:
-		return jsonify({'status':'error', 'error':'ID not found'})
-	chirp['_id'] = str(chirp['_id'])
-	return jsonify({'status':'OK', 'item':chirp})
+    chirps = mongo.db.chirps
+    chirp = chirps.find_one({'_id': id})
+    if chirp is None:
+        return jsonify({'status': 'error', 'error': 'ID not found'})
+    chirp['_id'] = str(chirp['_id'])
+    return jsonify({'status': 'OK', 'item': chirp})
+
 
 @chirpMod.route('/item/<id>', methods=['DELETE'])
 def deleteChirp(id):
-	error = False
-	errorMsg = ''
-	if id is None:
-		return jsonify({'status':'error', 'error':'Invalid request'})
-	chirp = mongo.db.chirps.delete_one({'_id':ObjectId(id)})
-	# ADD CODE TO DELETE ALL THE ASSOCIATED MEDIA FROM CEPH OR WHATEVER
-	return jsonify({'status':'OK'})
+    error = False
+    errorMsg = ''
+    if id is None:
+        return jsonify({'status': 'error', 'error': 'Invalid request'})
+    chirp = mongo.db.chirps.delete_one({'_id': id})
+
+    # TODO Add code to delete associated media
+
+    return jsonify({'status': 'OK'})
+
 
 @chirpMod.route('/item/<id>/like', methods=['POST'])
 def like(id):
-	error = False
-	errorMsg = ''
-	if not session.get('loggedIn'):
-		error = True
-		errorMsg = 'Not logged in'
-		return jsonify({'status': 'error', 'error': errorMsg})
+    error = False
+    errorMsg = ''
+    if not session.get('loggedIn'):
+        error = True
+        errorMsg = 'Not logged in'
+        return jsonify({'status': 'error', 'error': errorMsg})
 
-	data = getRequestData(request)
-	if 'like' not in data:
-		return jsonify({'status' : 'error'})
+    data = getRequestData(request)
+    if 'like' not in data:
+        return jsonify({'status': 'error'})
 
-	chirps = mongo.db.chirps
-	users = mongo.db.users
+    chirps = mongo.db.chirps
+    users = mongo.db.users
 
-	userId = session.get('userId')
-	chirps.update({'_id' : ObjectId(id)}, {"$push" : {"likes" : userId}})
-	users.update({'_id' : ObjectId(userId)}, {'$push' : {'likes' : id}})
-	return jsonify({'status' : 'OK'})
+    userId = session.get('userId')
+    like = data['like']
+
+    # update in both users and chirps
+    if like is True:
+        chirps.update_one({'_id': ObjectId(id)}, {"$push": {"likes": userId}})
+        users.update_one({'_id': ObjectId(userId)}, {'$push': {'likes': id}})
+    else:
+        chirps.update_one({'_id': ObjectId(id)}, {"pull": {"likes": userId}})
+        users.update_one({'_id': ObjectId(userId)}, {'pull': {'likes': id}})
+    return jsonify({'status': 'OK'})
 
 
 @chirpMod.route('/search', methods=['POST'])
 def search():
-	error = False
-	errorMsg = ''
+    chirps = mongo.db.chirps
+    users = mongo.db.users
+    data = getRequestData(request)
 
-	chirps = mongo.db.chirps
-	users = mongo.db.users
-	data = getRequestData(request)
+    query = {'$and': []}
 
-	query = { '$and' : [] }
-	
-	if not 'timestamp' in data:
-		timestamp = datetime.utcnow()
-	else:
-		timestamp = datetime.utcfromtimestamp(float(data['timestamp']))
+    if not 'timestamp' in data:
+        timestamp = datetime.utcnow()
+    else:
+        timestamp = datetime.utcfromtimestamp(float(data['timestamp']))
 
-	query["$and"].append({"timestamp" : {'$lte' : timestamp}})
+    query["$and"].append({"timestamp": {'$lte': timestamp}})
 
-	if 'limit' in data:
-		limit = data['limit']
-	else:
-		limit = 25
+    if 'limit' in data:
+        limit = data['limit']
+    else:
+        limit = 25
 
-	if 'q' in data:
-		searchquery = data['q']
-		query["$and"].append({"$text" : {"$search" : searchquery}})
+    # filter on search query
+    if 'q' in data:
+        searchquery = data['q']
+        query["$and"].append({"$text": {"$search": searchquery}})
 
-	if 'username' in data:
-		username = data['username']
-		user = users.find_one({'username': username})
-		query["$and"].append({"user_id" : {"$eq" : user['_id']}})
+    if 'username' in data:
+        username = data['username']
+        user = users.find_one({'username': username})
+        query["$and"].append({"user_id": {"$eq": user['_id']}})
 
-	if 'rank' in data:
-		rank = data['rank']
-	else:
-		rank = 'interest'
+    # get chirps made in reply to requested tweet
+    if 'parent' in data:
+        parent = data['parent']
+        query["$and"].append({"parent": {"$eq": parent}})
 
-	if 'parent' in data:
-		parent = data['parent']
-		query["$and"].append({"parent" : {"$eq" : parent}})
+    # get chirps made by users you are following
+    if session.get('loggedIn') is True:
+        if 'following' in data:
+            if data['following'] is True or data['following'] is None:
+                user = mongo.db.users.find_one({"username": {"$eq": session.get('username')}})
+                if 'following' not in user:
+                    user['following'] = []
+                query["$and"].append({"following": {"$in": user['following']}})
 
-	if 'replies' in data:
-		replies = data['replies']
-	else:
-		replies = True
+    # sort by interest or time
+    if 'rank' in data:
+        rank = data['rank']
+    else:
+        rank = 'interest'
 
-	if session.get('loggedIn') is True:
-		if 'following' in data:
-			if data['following'] is True or data['following'] is None:
-				user = mongo.db.users.find_one({"username" : {"$eq" : session.get('username')}})
-				if 'following' not in user:
-					user['following'] = []
-				query["$and"].append({"following" : {"$in" : user['following']}})
-			
-	query = chirps.find(query).limit(limit)
-	# rank algorithm
-	# .sort([('timestamp',-1)])
+    if rank == 'time':
+        query.append({"$sort": {
+            "timestamp": -1
+        }})
+    else:
+        query.append(
+            {
+                "$sort": {
+                    {"$sum":
+                         ["retweets", {"$size": "likes"}]
+                     }: -1
+                }
+            }
+        )
 
-	# get all tweets with this id as the parent
+    # get replies for all filtered tweets
+    if 'replies' in data:
+        replies = data['replies']
+    else:
+        replies = True
 
-	chirpList = []
-	for chirp in query:
-		chirp['id'] = str(chirp['_id'])
-		chirp.pop('_id', None)
-		chirpList.append(chirp)
-	return jsonify({'status':'OK', 'items':chirpList})
+    # TODO add code for getting replies
+
+    results = chirps.aggregate(query).limit(limit)
+
+    chirpList = []
+    for chirp in results:
+        chirp['id'] = str(chirp['_id'])
+        chirp.pop('_id', None)
+        chirpList.append(chirp)
+    return jsonify({'status': 'OK', 'items': chirpList})
