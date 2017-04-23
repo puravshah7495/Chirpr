@@ -59,7 +59,7 @@ def addItem():
     return jsonify({'status': 'OK', 'id': str(chirp.inserted_id)})
 
 
-@chirpMod.route('/item/<id>', methods=['GET'])
+@chirpMod.route('/item/<ObjectId:id>', methods=['GET'])
 def getChirp(id):
     error = False
     errorMsg = ''
@@ -74,7 +74,7 @@ def getChirp(id):
     return jsonify({'status': 'OK', 'item': chirp})
 
 
-@chirpMod.route('/item/<id>', methods=['DELETE'])
+@chirpMod.route('/item/<ObjectId:id>', methods=['DELETE'])
 def deleteChirp(id):
     error = False
     errorMsg = ''
@@ -188,6 +188,7 @@ def search():
         replies = True
 
     # TODO add code for getting replies
+
 
     results = chirps.aggregate(query).limit(limit)
 
