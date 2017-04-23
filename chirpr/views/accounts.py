@@ -40,6 +40,7 @@ def createAccount():
                 userData = {}
                 for key in data:
                     userData[key] = data[key]
+                userData['likes'] = []
                 userData['verified'] = False
                 users.insert_one(userData)
                 verifykeys.insert_one({'email': email, 'emailed_key': key})

@@ -5,11 +5,13 @@ app.config.from_pyfile('app.cfg')
 
 from views.accounts import account
 from views.chirps import chirpMod
+from views.media import media
 from flask_pymongo import PyMongo
 from database import mongo
 
 app.register_blueprint(account)
 app.register_blueprint(chirpMod)
+app.register_blueprint(media)
 
 @app.route('/')
 def index():
