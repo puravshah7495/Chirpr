@@ -54,7 +54,7 @@ def addItem():
         }})
 
     if parent:
-        chirps.update_one({'_id': parent}, {'$push': {'replies': chirp['_id']}})
+        chirps.update_one({'_id': parent}, {'$push': {'replies': chirp}})
 
     return jsonify({'status': 'OK', 'id': str(chirp.inserted_id)})
 
@@ -194,7 +194,4 @@ def search():
         chirp['id'] = str(chirp['_id'])
         chirp.pop('_id', None)
         chirpList.append(chirp)
-        replyIds = chirp['replies']
-        repliesList = chirps.find({_id: {"$in": replyIds}});
-        chirp['replies'] = repliesList
     return jsonify({'status': 'OK', 'items': chirpList})
