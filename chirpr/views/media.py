@@ -5,7 +5,7 @@ import os
 
 media = Blueprint("mediaMod", __name__)
 
-@media.route('/addMedia', methods=['GET','POST'])
+@media.route('/addmedia', methods=['GET','POST'])
 def addMedia():
     if request.method == "GET":
         return render_template('media.html')
@@ -15,9 +15,9 @@ def addMedia():
 
     mediaFile = request.files['content']
     data = base64.b64encode(mediaFile.read())
-    f_id = files.insert_one({'content': data})
+    f = files.insert_one({'content': data})
 
-    return jsonify({'status': 'OK', 'id': f_id})
+    return jsonify({'status': 'OK', 'id': str(f.inserted_id)})
 
 @media.route('/media/<ObjectId:id>', methods=['GET'])
 def getMedia(id):

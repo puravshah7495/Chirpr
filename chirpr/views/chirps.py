@@ -168,19 +168,25 @@ def search():
         rank = 'interest'
 
     if rank == 'time':
-        query.append({"$sort": {
+        # query.append({"$sort": {
+        #     "timestamp": -1
+        # }})
+        query['sort'] = {
             "timestamp": -1
-        }})
+        }
     else:
-        query.append(
-            {
-                "$sort": {
-                    {"$sum":
-                         ["retweets", {"$size": "likes"}]
-                     }: -1
-                }
-            }
-        )
+        query['sort'] = {
+            {"$sum": ["retweets", {"$size": "likes"}]}: -1
+        }
+        # query.append(
+        #     {
+        #         "$sort": {
+        #             {"$sum":
+        #                  ["retweets", {"$size": "likes"}]
+        #              }: -1
+        #         }
+        #     }
+        # )
 
     # get replies for all filtered tweets
     if 'replies' in data:
