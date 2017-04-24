@@ -187,9 +187,6 @@ def search():
     else:
         replies = True
 
-    # TODO add code for getting replies
-
-
     results = chirps.aggregate(query).limit(limit)
 
     chirpList = []
@@ -197,4 +194,7 @@ def search():
         chirp['id'] = str(chirp['_id'])
         chirp.pop('_id', None)
         chirpList.append(chirp)
+        replyIds = chirp['replies']
+        repliesList = chirps.find({_id: {"$in": replyIds}});
+        chirp['replies'] = repliesList
     return jsonify({'status': 'OK', 'items': chirpList})
