@@ -194,7 +194,13 @@ def search():
     else:
         replies = True
 
-    results = chirps.aggregate(query).limit(limit)
+    # results = chirps.aggregate(query).limit(limit)
+    results = chirps.aggregate([
+        {'$match': query},
+        {'$group': {"_id":"_id", 'rank':{"$sum": ["retweets", {"$size": "likes"}]}}},
+        {'$project': {'content':1, 'replies':1, 'user_id':1, 'timestamp':1, 'likes':1, 'retweets':1}},
+        {'$limit':limit}
+    ])
 
     chirpList = []
     for chirp in results:
