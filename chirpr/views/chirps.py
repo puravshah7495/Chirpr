@@ -80,9 +80,10 @@ def deleteChirp(id):
     errorMsg = ''
     if id is None:
         return jsonify({'status': 'error', 'error': 'Invalid request'})
-    chirp = mongo.db.chirps.delete_one({'_id': id})
 
-    # TODO Add code to delete associated media
+    chirp = mongo.db.chirps.find_one({'_id': id})
+    mongo.db.media.delete_one({'_id': ObjectId(chirp['media'])})
+    mongo.db.chirps.delete_one({'_id': id})
 
     return jsonify({'status': 'OK'})
 
