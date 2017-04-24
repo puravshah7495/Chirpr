@@ -15,9 +15,9 @@ def addMedia():
 
     mediaFile = request.files['content']
     data = base64.b64encode(mediaFile.read())
-    f = files.insert_one({'content': data})
+    f_id = files.insert_one({'content': data})
 
-    return jsonify({'status': 'OK', 'id': f.inserted_id})
+    return jsonify({'status': 'OK', 'id': f_id})
 
 @media.route('/media/<ObjectId:id>', methods=['GET'])
 def getMedia(id):
