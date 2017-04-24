@@ -78,7 +78,7 @@ def login():
         if not error:
             session['loggedIn'] = True
             session['username'] = username
-            session['userId'] = user['_id']
+            session['userId'] = str(user['_id'])
             return jsonify({'status': 'OK'})
         else:
             return jsonify({'status': 'error', 'error': errorMsg})
