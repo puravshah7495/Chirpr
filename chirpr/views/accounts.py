@@ -14,7 +14,6 @@ def createAccount():
         errorMsg = ''
 
         data = getRequestData(request)
-    	print data
         if 'username' not in data or 'password' not in data or 'email' not in data:
             errorMsg = 'Invalid request'
             return jsonify({'status':'error', 'error':errorMsg})
@@ -62,6 +61,7 @@ def login():
         errorMsg = ''
 
         data = getRequestData(request)
+	print data
         if 'username' not in data or 'password' not in data:
             errorMsg = "Invalid request"
             return jsonify({'status':'error', 'error':errorMsg})
@@ -70,7 +70,7 @@ def login():
         password = data['password']
 
         user = mongo.db.users.find_one({'username':username,'password':password});
-        
+	print user        
         if not user:
             error = True
             errorMsg = "Invalid username or password"
@@ -111,7 +111,6 @@ def verify():
     if verification is None:
         return jsonify({'status': 'error', 'error': 'Invalid Key'})
 
-    print verification
     if verification['emailed_key'] == key or key == "abracadabra":
         verifykeys.delete_one({'email':email})
         users.update({'_id':user['_id']}, {'$set': {'verified': True}})
@@ -155,24 +154,24 @@ def getUser(username):
     
     followerCount = users.find({'following': {'$elemMatch': {'$eq': username}}}).count()
 
-    if request.method == 'GET':
-        user['followingCount'] = followingCount
-        user['followerCount'] = followerCount
+    #if request.method == 'GET':
+    #    user['followingCount'] = followingCount
+    #    user['followerCount'] = followerCount
         
-        isUser = False
-        if session.get('loggedIn') and session.get('username') == user['username']:
-            isUser = True
+    #    isUser = False
+    #    if session.get('loggedIn') and session.get('username') == user['username']:
+    #        isUser = True
 
-        return render_template('accounts/profile.html', user=user, isUser=isUser)
-    else:
+    #    return render_template('accounts/profile.html', user=user, isUser=isUser)
+    #else:
         # if not user:
         #     return jsonify({'status':'error', 'error':'User not found'})
-        result = {}
-        result['following'] = followingCount
-        result['followers'] = followerCount
-        result['email'] = user['email']
+    result = {}
+    result['following'] = followingCount
+    result['followers'] = followerCount
+    result['email'] = user['email']
 
-        return jsonify({'status':'OK', 'user': result})
+    return jsonify({'status':'OK', 'user': result})
 
 @account.route('/user/<username>/following')
 def getFollowing(username):
