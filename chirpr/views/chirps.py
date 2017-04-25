@@ -182,8 +182,12 @@ def search():
         }
     else:
         query['sort'] = {
-            {"$sum": ["retweets", {"$size": "likes"}]}: -1
+            {"$size": "likes"}: -1
         }
+        # query['sort'] = {
+        #     {"$sum": ["retweets", {"$size": "likes"}]}: -1
+        # }
+
         # query.append(
         #     {
         #         "$sort": {
