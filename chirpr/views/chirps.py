@@ -91,7 +91,8 @@ def deleteChirp(id):
     chirp = mongo.db.chirps.find_one({'_id': id})
     fs = gridfs.GridFS(mongo.db)
 
-    fs.delete(ObjectId(chirp['media']))
+    for media_id in chirp['media']:
+        fs.delete(ObjectId(media_id))
     mongo.db.chirps.delete_one({'_id': id})
 
     return jsonify({'status': 'OK'})
@@ -176,6 +177,12 @@ def search():
     else:
         rank = 'interest'
 
+    # get replies for all filtered tweets
+    if 'replies' in data:
+        replies = data['replies']
+    else:
+        replies = True
+
     if rank == 'time':
         # query.append({"$sort": {
         #     "timestamp": -1
@@ -183,11 +190,12 @@ def search():
         query['sort'] = {
             "timestamp": -1
         }
+        results = chirps.find(query).limit(limit);
     else:
-        query['sort'] = {
-            {"$size": "likes"}: -1
-        }
         # query['sort'] = {
+        #     {"$size": "likes"}: -1
+        # }
+        # # query['sort'] = {
         #     {"$sum": ["retweets", {"$size": "likes"}]}: -1
         # }
 
@@ -201,20 +209,13 @@ def search():
         #     }
         # )
 
-    # get replies for all filtered tweets
-    if 'replies' in data:
-        replies = data['replies']
-    else:
-        replies = True
-
     # results = chirps.aggregate(query).limit(limit)
-    # results = chirps.aggregate([
-    #     {'$match': query},
-    #     {'$group': {"_id":"_id", 'rank':{"$sum": ["retweets", {"$size": "likes"}]}}},
-    #     {'$project': {'content':1, 'replies':1, 'user_id':1, 'timestamp':1, 'likes':1, 'retweets':1}},
-    #     {'$limit':limit}
-    # ])
-    results = chirps.find(query).limit(limit);
+        results = chirps.aggregate([
+            {'$match': query},
+            {'$group': {"_id":"_id", 'rank':{"$sum": ["retweets", {"$size": "likes"}]}}},
+            {'$project': {'content':1, 'replies':1, 'user_id':1, 'timestamp':1, 'likes':1, 'retweets':1}},
+            {'$limit':limit}
+        ])
 
     print results
 
