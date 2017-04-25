@@ -35,7 +35,7 @@ def addItem():
         return jsonify({'status': 'error', 'error': 'Chirp is too long'})
 
     query['content'] = content
-    query['user_id'] = ObjectId(session.get('userId'))
+    query['user_id'] = session.get('userId')
     query['timestamp'] = datetime.utcnow()
     query['retweets'] = 0
     query['replies'] = []
