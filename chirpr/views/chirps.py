@@ -66,13 +66,16 @@ def getChirp(id):
     error = False
     errorMsg = ''
     if id is None:
+        print("invalid request")
         return jsonify({'status': 'error', 'error': 'Invalid request'})
 
     chirps = mongo.db.chirps
     chirp = chirps.find_one({'_id': id})
     if chirp is None:
+        print("couldn't find id")
         return jsonify({'status': 'error', 'error': 'ID not found'})
     chirp['_id'] = str(chirp['_id'])
+    print("found")
     return jsonify({'status': 'OK', 'item': chirp})
 
 
