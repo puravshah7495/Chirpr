@@ -116,10 +116,10 @@ def like(id):
     # update in both users and chirps
     if like is True:
         chirps.update_one({'_id': ObjectId(id)}, {"$push": {"likes": str(userId)}})
-        users.update_one({'_id': ObjectId(userId)}, {'$push': {'likes': id}})
+        users.update_one({'_id': ObjectId(userId)}, {'$push': {'likes': str(id)}})
     else:
         chirps.update_one({'_id': ObjectId(id)}, {"pull": {"likes": str(userId)}})
-        users.update_one({'_id': ObjectId(userId)}, {'pull': {'likes': id}})
+        users.update_one({'_id': ObjectId(userId)}, {'pull': {'likes': str(id)}})
     return jsonify({'status': 'OK'})
 
 
