@@ -55,9 +55,9 @@ def addItem():
     #         "retweets": 1,
     #     }})
 
-    # if parent >= 0:
-    #     chirp['_id'] = str(chirp['_id'])
-    #     chirps.update_one({'_id': parent}, {'$push': {'replies': chirp}})
+    if parent >= 0:
+        chirp['_id'] = str(chirp['_id'])
+        chirps.update_one({'_id': parent}, {'$push': {'replies': chirp}})
 
     return jsonify({'status': 'OK', 'id': str(chirp.inserted_id)})
 
@@ -182,8 +182,12 @@ def search():
         }
     else:
         query['sort'] = {
-            {"$sum": ["retweets", {"$size": "likes"}]}: -1
+            {"$size": "likes"}: -1
         }
+        # query['sort'] = {
+        #     {"$sum": ["retweets", {"$size": "likes"}]}: -1
+        # }
+
         # query.append(
         #     {
         #         "$sort": {
