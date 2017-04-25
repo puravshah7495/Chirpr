@@ -35,7 +35,7 @@ def addItem():
         return jsonify({'status': 'error', 'error': 'Chirp is too long'})
 
     query['content'] = content
-    query['user_id'] = session.get('userId')
+    query['username'] = session.get('username')
     query['timestamp'] = datetime.utcnow()
     query['retweets'] = 0
     query['replies'] = []
@@ -49,15 +49,15 @@ def addItem():
 
     chirp = chirps.insert_one(query)
 
-    if content[:3].capitalize() == "RT ":
-        chirps.find({"content": content})
-        chirps.update_many({"content": content}, {"$inc": {
-            "retweets": 1,
-        }})
+    # if content[:3].capitalize() == "RT ":
+    #     chirps.find({"content": content})
+    #     chirps.update_many({"content": content}, {"$inc": {
+    #         "retweets": 1,
+    #     }})
 
-    if parent >= 0:
-        chirp['_id'] = str(chirp['_id'])
-        chirps.update_one({'_id': parent}, {'$push': {'replies': chirp}})
+    # if parent >= 0:
+    #     chirp['_id'] = str(chirp['_id'])
+    #     chirps.update_one({'_id': parent}, {'$push': {'replies': chirp}})
 
     return jsonify({'status': 'OK', 'id': str(chirp.inserted_id)})
 
@@ -151,7 +151,7 @@ def search():
     if 'username' in data:
         username = data['username']
         user = users.find_one({'username': username})
-        query["$and"].append({"user_id": {"$eq": user['_id']}})
+        query["$and"].append({"username": {"$eq": user['username']}})
 
     # get chirps made in reply to requested tweet
     if 'parent' in data:
