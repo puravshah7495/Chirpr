@@ -56,6 +56,7 @@ def addItem():
         }})
 
     if parent >= 0:
+        chirp['_id'] = str(chirp['_id'])
         chirps.update_one({'_id': parent}, {'$push': {'replies': chirp}})
 
     return jsonify({'status': 'OK', 'id': str(chirp.inserted_id)})
@@ -114,10 +115,10 @@ def like(id):
 
     # update in both users and chirps
     if like is True:
-        chirps.update_one({'_id': ObjectId(id)}, {"$push": {"likes": userId}})
+        chirps.update_one({'_id': ObjectId(id)}, {"$push": {"likes": str(userId)}})
         users.update_one({'_id': ObjectId(userId)}, {'$push': {'likes': id}})
     else:
-        chirps.update_one({'_id': ObjectId(id)}, {"pull": {"likes": userId}})
+        chirps.update_one({'_id': ObjectId(id)}, {"pull": {"likes": str(userId)}})
         users.update_one({'_id': ObjectId(userId)}, {'pull': {'likes': id}})
     return jsonify({'status': 'OK'})
 
