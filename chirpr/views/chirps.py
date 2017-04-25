@@ -4,6 +4,7 @@ from datetime import datetime
 from bson.objectid import ObjectId
 import pymongo
 import traceback
+import gridfs
 
 chirpMod = Blueprint("chirpMod", __name__)
 
@@ -88,7 +89,9 @@ def deleteChirp(id):
         return jsonify({'status': 'error', 'error': 'Invalid request'})
 
     chirp = mongo.db.chirps.find_one({'_id': id})
-    mongo.db.media.delete_one({'_id': ObjectId(chirp['media'])})
+    fs = gridfs.GridFS(mongo.db)
+
+    fs.delete(ObjectId(chirp['media']))
     mongo.db.chirps.delete_one({'_id': id})
 
     return jsonify({'status': 'OK'})
