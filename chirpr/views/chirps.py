@@ -44,6 +44,8 @@ def addItem():
     if 'parent' in data:
         parent = data['parent']
         query['parent'] = parent
+    else:
+        parent = -1
 
     chirp = chirps.insert_one(query)
 
@@ -53,7 +55,7 @@ def addItem():
             "retweets": 1,
         }})
 
-    if parent:
+    if parent >= 0:
         chirps.update_one({'_id': parent}, {'$push': {'replies': chirp}})
 
     return jsonify({'status': 'OK', 'id': str(chirp.inserted_id)})
