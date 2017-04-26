@@ -132,7 +132,7 @@ def search():
     chirps = mongo.db.chirps
     users = mongo.db.users
     data = getRequestData(request)
-
+    print data
     query = {'$and': []}
 
     if not 'timestamp' in data:
@@ -212,12 +212,12 @@ def search():
     # results = chirps.aggregate(query).limit(limit)
         results = chirps.aggregate([
             {'$match': query},
-            {'$project': {'content':1, 'replies':1, 'user_id':1, 'timestamp':1, 'likes':1, 'retweets':1, 'rank':{"$sum": ["retweets", {"$size": {"$ifNull": ["likes",[]]}}]}}},
+            {'$project': {'content':1, 'replies':1, 'user_id':1, 'timestamp':1, 'likes':1, 'retweets':1, 'rank':{"$sum": ["retweets", {"$size": {"$ifNull": ["$likes",[]]}}]}}},
             {'$sort': {'rank': -1}},
             {'$limit': limit}
         ])
 
-    print list(results)
+    print len(list(results))
 
     chirpList = []
     for chirp in results:
