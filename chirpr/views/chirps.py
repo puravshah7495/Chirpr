@@ -38,8 +38,9 @@ def addItem():
     query['content'] = content
     query['username'] = session.get('username')
     query['timestamp'] = datetime.utcnow()
-    query['retweets'] = 0
-    query['replies'] = []
+    # query['retweets'] = 0
+    # query['replies'] = []
+    query['replies'] = 0
     query['likes'] = []
 
     if 'parent' in data:
@@ -57,8 +58,8 @@ def addItem():
     #     }})
 
     if parent >= 0:
-        chirp['_id'] = str(chirp['_id'])
-        chirps.update_one({'_id': parent}, {'$push': {'replies': chirp}})
+        # chirps.update_one({'_id': parent}, {'$push': {'replies': chirp}})
+        chirps.update_one({'_id': parent}, {'$inc': {'replies': 1}})
 
     return jsonify({'status': 'OK', 'id': str(chirp.inserted_id)})
 
@@ -132,9 +133,7 @@ def search():
     chirps = mongo.db.chirps
     users = mongo.db.users
     data = getRequestData(request)
-    
     print data
-    
     query = {'$and': []}
 
     if not 'timestamp' in data:
@@ -214,16 +213,15 @@ def search():
     # results = chirps.aggregate(query).limit(limit)
         results = chirps.aggregate([
             {'$match': query},
-            {'$project': {'content':1, 'replies':1, 'user_id':1, 'timestamp':1, 'likes':1, 'retweets':1, 'rank':{"$sum": ["retweets", {"$size": {"$ifNull": ["$likes",[]]}}]}}},
+            {'$project': {'content':1, 'replies':1, 'username':1, 'timestamp':1, 'likes':1, 'retweets':1, 'rank':{"$sum": ["retweets", {"$size": {"$ifNull": ["$likes",[]]}}]}}},
             {'$sort': {'rank': -1}},
             {'$limit': limit}
         ])
-
-    print len(list(results))
 
     chirpList = []
     for chirp in results:
         chirp['id'] = str(chirp['_id'])
         chirp.pop('_id', None)
         chirpList.append(chirp)
+    print len(chirpList)
     return jsonify({'status': 'OK', 'items': chirpList})
