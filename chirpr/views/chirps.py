@@ -58,7 +58,6 @@ def addItem():
     #     }})
 
     if parent >= 0:
-        chirp['_id'] = str(chirp['_id'])
         # chirps.update_one({'_id': parent}, {'$push': {'replies': chirp}})
         chirps.update_one({'_id': parent}, {'$inc': {'replies': 1}})
 
