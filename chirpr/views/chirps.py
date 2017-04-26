@@ -133,7 +133,7 @@ def search():
     chirps = mongo.db.chirps
     users = mongo.db.users
     data = getRequestData(request)
-    print data
+    print "hello"
     query = {'$and': []}
 
     if not 'timestamp' in data:
@@ -218,7 +218,7 @@ def search():
             {'$limit': limit}
         ])
 
-    print len(list(results))
+    print "world"
 
     chirpList = []
     for chirp in results:
