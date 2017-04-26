@@ -98,7 +98,7 @@ def deleteChirp(id):
     return jsonify({'status': 'OK'})
 
 
-@chirpMod.route('/item/<id>/like', methods=['POST'])
+@chirpMod.route('/item/<ObjectId:id>/like', methods=['POST'])
 def like(id):
     error = False
     errorMsg = ''
@@ -114,15 +114,15 @@ def like(id):
     chirps = mongo.db.chirps
     users = mongo.db.users
 
-    userId = ObjectId(session.get('userId'))
+    userId = session.get('userId')
     like = data['like']
 
     # update in both users and chirps
     if like is True:
-        chirps.update_one({'_id': ObjectId(id)}, {"$push": {"likes": str(userId)}})
+        chirps.update_one({'_id': id}, {"$push": {"likes": str(userId)}})
         users.update_one({'_id': ObjectId(userId)}, {'$push': {'likes': str(id)}})
     else:
-        chirps.update_one({'_id': ObjectId(id)}, {"pull": {"likes": str(userId)}})
+        chirps.update_one({'_id': id}, {"pull": {"likes": str(userId)}})
         users.update_one({'_id': ObjectId(userId)}, {'pull': {'likes': str(id)}})
     return jsonify({'status': 'OK'})
 
@@ -215,10 +215,10 @@ def search():
             {'$project': {'content':1, 'replies':1, 'user_id':1, 'timestamp':1, 'likes':1, 'retweets':1, 'rank':{"$sum": ["retweets", {"$size": "likes"}]}}},
             {'$group': {"_id":"_id"}},
             {'$sort': {'rank': -1}},
-            {'$limit':limit}
+            {'$limit': limit}
         ])
 
-    print results
+    print list(results)
 
     chirpList = []
     for chirp in results:
