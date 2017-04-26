@@ -191,6 +191,7 @@ def search():
         query['sort'] = {
             "timestamp": -1
         }
+        print query
         results = chirps.find(query).limit(limit)
     else:
         # query['sort'] = {
