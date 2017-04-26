@@ -77,7 +77,7 @@ def getChirp(id):
         print("couldn't find id")
         return jsonify({'status': 'error', 'error': 'ID not found'})
     chirp['_id'] = str(chirp['_id'])
-    print("found")
+
     return jsonify({'status': 'OK', 'item': chirp})
 
 
@@ -132,7 +132,9 @@ def search():
     chirps = mongo.db.chirps
     users = mongo.db.users
     data = getRequestData(request)
+    
     print data
+    
     query = {'$and': []}
 
     if not 'timestamp' in data:

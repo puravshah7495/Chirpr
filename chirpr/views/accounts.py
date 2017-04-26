@@ -61,7 +61,6 @@ def login():
         errorMsg = ''
 
         data = getRequestData(request)
-	print data
         if 'username' not in data or 'password' not in data:
             errorMsg = "Invalid request"
             return jsonify({'status':'error', 'error':errorMsg})
@@ -70,7 +69,6 @@ def login():
         password = data['password']
 
         user = mongo.db.users.find_one({'username':username,'password':password});
-	print user        
         if not user:
             error = True
             errorMsg = "Invalid username or password"
