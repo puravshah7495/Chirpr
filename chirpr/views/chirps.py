@@ -222,5 +222,5 @@ def search():
         chirp['id'] = str(chirp['_id'])
         chirp.pop('_id', None)
         chirpList.append(chirp)
-    print "length of chirps: " + len(chirpList)
+    print len(chirpList)
     return jsonify({'status': 'OK', 'items': chirpList})
