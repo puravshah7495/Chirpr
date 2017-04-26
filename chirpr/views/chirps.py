@@ -38,8 +38,9 @@ def addItem():
     query['content'] = content
     query['username'] = session.get('username')
     query['timestamp'] = datetime.utcnow()
-    query['retweets'] = 0
-    query['replies'] = []
+    # query['retweets'] = 0
+    # query['replies'] = []
+    query['replies'] = 0
     query['likes'] = []
 
     if 'parent' in data:
@@ -58,7 +59,8 @@ def addItem():
 
     if parent >= 0:
         chirp['_id'] = str(chirp['_id'])
-        chirps.update_one({'_id': parent}, {'$push': {'replies': chirp}})
+        # chirps.update_one({'_id': parent}, {'$push': {'replies': chirp}})
+        chirps.update_one({'_id': parent}, {'$inc': {'replies': 1}})
 
     return jsonify({'status': 'OK', 'id': str(chirp.inserted_id)})
 
