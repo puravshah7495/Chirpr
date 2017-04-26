@@ -133,7 +133,6 @@ def search():
     chirps = mongo.db.chirps
     users = mongo.db.users
     data = getRequestData(request)
-    print "hello"
     query = {'$and': []}
 
     if not 'timestamp' in data:
@@ -218,11 +217,10 @@ def search():
             {'$limit': limit}
         ])
 
-    print "world"
-
     chirpList = []
     for chirp in results:
         chirp['id'] = str(chirp['_id'])
         chirp.pop('_id', None)
         chirpList.append(chirp)
+    print "length of chirps: " + len(chirpList)
     return jsonify({'status': 'OK', 'items': chirpList})
