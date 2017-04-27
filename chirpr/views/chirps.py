@@ -194,7 +194,7 @@ def search():
         #     "timestamp": -1
         # }})
         print query
-        results = chirps.find(query).limit(limit).sort({'timestamp':-1})
+        results = chirps.find(query).limit(limit).sort('timestamp', pymongo.DESCENDING)
     else:
         # query['sort'] = {
         #     {"$size": "likes"}: -1
