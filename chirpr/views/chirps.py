@@ -219,7 +219,7 @@ def search():
         print limit
         results = chirps.aggregate([
             {'$match': query},
-            {'$project': {'content':1, 'replies':1, 'username':1, 'timestamp':1, 'likes':1, 'retweets':1, 'rank':{"$sum": ["replies", {"$size": "$likes"}]}}},
+            {'$project': {'content':1, 'replies':1, 'username':1, 'timestamp':1, 'likes':1, 'rank':{"$sum": ["replies", {"$size": "$likes"}]}}},
             {'$sort': {'rank': -1}},
             {'$limit': limit}
         ])
