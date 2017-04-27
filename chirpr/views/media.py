@@ -14,7 +14,7 @@ def addMedia():
     error = False
     errorMsg = ''
     # files = mongo.db.media
-    fs = gridfs.GridFS(mongo.db, collection="media")
+    fs = gridfs.GridFS(mongo.db, collection="fs")
     mediaFile = request.files['content']
     id = fs.put(mediaFile, filename=mediaFile.filename)
     # data = base64.b64encode(mediaFile.read())
@@ -28,7 +28,7 @@ def getMedia(id):
     error = False
     errorMsg = ''
 
-    fs = gridfs.GridFS(mongo.db, collection="media")
+    fs = gridfs.GridFS(mongo.db, collection="fs")
     img = fs.get(id)
     print img.filename
 
