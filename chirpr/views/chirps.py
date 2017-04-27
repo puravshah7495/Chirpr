@@ -188,11 +188,12 @@ def search():
         # query.append({"$sort": {
         #     "timestamp": -1
         # }})
-        query['sort'] = {
-            "timestamp": -1
-        }
-        print query
-        results = chirps.find(query).limit(limit)
+        # query['sort'] = {
+        #     "timestamp": -1
+        # }
+        # print query
+        # results = chirps.find(query).limit(limit)
+        sort = {'timestamp':-1}
     else:
         # query['sort'] = {
         #     {"$size": "likes"}: -1
@@ -210,14 +211,16 @@ def search():
         #         }
         #     }
         # )
+        sort = {'rank':-1}
 
     # results = chirps.aggregate(query).limit(limit)
-        results = chirps.aggregate([
-            {'$match': query},
-            {'$project': {'content':1, 'replies':1, 'username':1, 'timestamp':1, 'likes':1, 'retweets':1, 'rank':{"$sum": ["retweets", {"$size": {"$ifNull": ["$likes",[]]}}]}}},
-            {'$sort': {'rank': -1}},
-            {'$limit': limit}
-        ])
+    print query
+    results = chirps.aggregate([
+        {'$match': query},
+        {'$project': {'content':1, 'replies':1, 'username':1, 'timestamp':1, 'likes':1, 'retweets':1, 'rank':{"$sum": ["retweets", {"$size": {"$ifNull": ["$likes",[]]}}]}}},
+        {'$sort': sort},
+        {'$limit': limit}
+    ])
 
     chirpList = []
     for chirp in results:
