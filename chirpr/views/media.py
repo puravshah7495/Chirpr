@@ -14,7 +14,7 @@ def addMedia():
     error = False
     errorMsg = ''
     # files = mongo.db.media
-    fs = gridfs.GridFS(mongo.db)
+    fs = gridfs.GridFS(mongo.db, collection="fs")
     mediaFile = request.files['content']
     id = fs.put(mediaFile, filename=mediaFile.filename)
     # data = base64.b64encode(mediaFile.read())
@@ -28,14 +28,10 @@ def getMedia(id):
     error = False
     errorMsg = ''
 
-    fs = gridfs.GridFS(mongo.db)
+    fs = gridfs.GridFS(mongo.db, collection="fs")
     img = fs.get(id)
     print img.filename
-    # f = files.find_one({'_id': id})
-    # print id, f
-    # tmp = open('tmp.png', "w")
-    # tmp.write(f['content'].decode('base64'))
-    # tmp.close()
+
     response = mongo.send_file(img.filename)
     response.headers['Content-Type'] = 'image/jpeg'
     print "successful get media"

@@ -87,7 +87,7 @@ def deleteChirp(id):
         return jsonify({'status': 'error', 'error': 'Invalid request'})
 
     chirp = mongo.db.chirps.find_one({'_id': id})
-    fs = gridfs.GridFS(mongo.db)
+    fs = gridfs.GridFS(mongo.db, collection="fs")
 
     for media_id in chirp['media']:
         fs.delete(ObjectId(media_id))
