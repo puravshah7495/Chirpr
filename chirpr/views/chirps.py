@@ -61,6 +61,7 @@ def addItem():
         # chirps.update_one({'_id': parent}, {'$push': {'replies': chirp}})
         chirps.update_one({'_id': parent}, {'$inc': {'replies': 1}})
 
+    print "successful login"
     return jsonify({'status': 'OK', 'id': str(chirp.inserted_id)})
 
 
@@ -79,6 +80,7 @@ def getChirp(id):
         return jsonify({'status': 'error', 'error': 'ID not found'})
     chirp['_id'] = str(chirp['_id'])
 
+    print "successful get"
     return jsonify({'status': 'OK', 'item': chirp})
 
 
@@ -96,6 +98,7 @@ def deleteChirp(id):
         fs.delete(ObjectId(media_id))
     mongo.db.chirps.delete_one({'_id': id})
 
+    print "successful delete"
     return jsonify({'status': 'OK'})
 
 
@@ -125,6 +128,8 @@ def like(id):
     else:
         chirps.update_one({'_id': id}, {"pull": {"likes": str(userId)}})
         users.update_one({'_id': ObjectId(userId)}, {'pull': {'likes': str(id)}})
+
+    print "successful like"
     return jsonify({'status': 'OK'})
 
 
@@ -188,11 +193,8 @@ def search():
         # query.append({"$sort": {
         #     "timestamp": -1
         # }})
-        query['sort'] = {
-            "timestamp": -1
-        }
         print query
-        results = chirps.find(query).limit(limit)
+        results = chirps.find(query).limit(limit).sort('timestamp', pymongo.DESCENDING)
     else:
         # query['sort'] = {
         #     {"$size": "likes"}: -1
@@ -213,9 +215,10 @@ def search():
 
     # results = chirps.aggregate(query).limit(limit)
         print query
+        print limit
         results = chirps.aggregate([
             {'$match': query},
-            {'$project': {'content':1, 'replies':1, 'username':1, 'timestamp':1, 'likes':1, 'retweets':1, 'rank':{"$sum": ["replies", {"$size": {"$ifNull": ["$likes",[]]}}]}}},
+            {'$project': {'content':1, 'replies':1, 'username':1, 'timestamp':1, 'likes':1, 'rank':{"$sum": ["replies", {"$size": "$likes"}]}}},
             {'$sort': {'rank': -1}},
             {'$limit': limit}
         ])
@@ -226,4 +229,5 @@ def search():
         chirp.pop('_id', None)
         chirpList.append(chirp)
     print len(chirpList)
+    print "successful search"
     return jsonify({'status': 'OK', 'items': chirpList})

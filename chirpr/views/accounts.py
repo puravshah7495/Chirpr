@@ -70,6 +70,7 @@ def login():
 
         user = mongo.db.users.find_one({'username':username,'password':password});
         if not user:
+            print "bad login"
             error = True
             errorMsg = "Invalid username or password"
         
@@ -77,8 +78,10 @@ def login():
             session['loggedIn'] = True
             session['username'] = username
             session['userId'] = str(user['_id'])
+            print "successful login"
             return jsonify({'status': 'OK'})
         else:
+            print "bad login"
             return jsonify({'status': 'error', 'error': errorMsg})
 
 @account.route('/logout', methods=['POST'])

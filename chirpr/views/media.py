@@ -19,7 +19,7 @@ def addMedia():
     id = fs.put(mediaFile, filename=mediaFile.filename)
     # data = base64.b64encode(mediaFile.read())
     # f = files.insert_one({'content': data})
-    print id
+    print "successful add media"
     return jsonify({'status': 'OK', 'id': str(id)})
 
 @media.route('/media/<ObjectId:id>', methods=['GET'])
@@ -38,6 +38,7 @@ def getMedia(id):
     # tmp.close()
     response = mongo.send_file(img.filename)
     response.headers['Content-Type'] = 'image/jpeg'
+    print "successful get media"
     return response
 
 
