@@ -52,8 +52,8 @@ def addItem():
     chirp = chirps.insert_one(query)
 
     if parent >= 0:
-        # chirps.update_one({'_id': parent}, {'$inc': {'replies': 1}})
-        print "nothing"
+        chirps.update_one({'_id': parent}, {'$inc': {'replies': 1}})
+
     print "successful login"
     return jsonify({'status': 'OK', 'id': str(chirp.inserted_id)})
 
@@ -136,7 +136,9 @@ def search():
 
     if not 'timestamp' in data:
         timestamp = datetime.utcnow()
+        print timestamp
     else:
+        print data['timestamp']
         timestamp = datetime.utcfromtimestamp(float(data['timestamp']))
 
     query["$and"].append({"timestamp": {'$lte': timestamp}})
