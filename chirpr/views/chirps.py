@@ -51,7 +51,14 @@ def addItem():
 
     chirp = chirps.insert_one(query)
 
+    # if content[:3].capitalize() == "RT ":
+    #     chirps.find({"content": content})
+    #     chirps.update_many({"content": content}, {"$inc": {
+    #         "retweets": 1,
+    #     }})
+
     if parent >= 0:
+        # chirps.update_one({'_id': parent}, {'$push': {'replies': chirp}})
         chirps.update_one({'_id': parent}, {'$inc': {'replies': 1}})
 
     print "successful login"
@@ -136,9 +143,7 @@ def search():
 
     if not 'timestamp' in data:
         timestamp = datetime.utcnow()
-        print timestamp
     else:
-        print data['timestamp']
         timestamp = datetime.utcfromtimestamp(float(data['timestamp']))
 
     query["$and"].append({"timestamp": {'$lte': timestamp}})
@@ -178,23 +183,46 @@ def search():
     else:
         rank = 'interest'
 
-    # # get replies for all filtered tweets
-    # if 'replies' in data:
-    #     replies = data['replies']
-    # else:
-    #     replies = True
+    # get replies for all filtered tweets
+    if 'replies' in data:
+        replies = data['replies']
+    else:
+        replies = True
 
     if rank == 'time':
+        # query.append({"$sort": {
+        #     "timestamp": -1
+        # }})
+        # query['sort'] = {
+        #     "timestamp": -1
+        # }
         print query 
         results = chirps.find(query).sort('timestamp', pymongo.DESCENDING).limit(limit) 
     else:
-        # results = chirps.aggregate(query).limit(limit)
+        # query['sort'] = {
+        #     {"$size": "likes"}: -1
+        # }
+        # # query['sort'] = {
+        #     {"$sum": ["retweets", {"$size": "likes"}]}: -1
+        # }
+
+        # query.append(
+        #     {
+        #         "$sort": {
+        #             {"$sum":
+        #                  ["retweets", {"$size": "likes"}]
+        #              }: -1
+        #         }
+        #     }
+        # )
+
+    # results = chirps.aggregate(query).limit(limit)
         print query
         print limit
         results = chirps.aggregate([
             {'$match': query},
-            {'$project': {'content':1, 'replies':1, 'username':1, 'timestamp':1, 'likes':1, 'rank':{"$sum": ["replies", {"$size": "$likes"}]}}},
-            {'$sort': {'username': -1}},
+           # {'$project': {'content':1, 'replies':1, 'username':1, 'timestamp':1, 'likes':1, 'rank':{"$sum": ["replies", {"$size": "$likes"}]}}},
+            {'$sort': {'likes': -1}},
             {'$limit': limit}
         ])
 
