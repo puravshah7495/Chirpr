@@ -5,6 +5,7 @@ from bson.objectid import ObjectId
 import pymongo
 import traceback
 import gridfs
+import time
 
 chirpMod = Blueprint("chirpMod", __name__)
 
@@ -199,6 +200,7 @@ def search():
     chirpList = []
     for chirp in results:
         chirp['id'] = str(chirp['_id'])
+        chirp['timestamp'] = int(time.mktime(chirp['timestamp'].timetuple()))
         chirp.pop('_id', None)
         chirpList.append(chirp)
     print len(chirpList)
