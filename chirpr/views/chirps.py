@@ -51,10 +51,11 @@ def addItem():
         parent = -1
 
     chirp = chirps.insert_one(query)
-
+    
     if parent >= 0:
-        # chirps.update_one({'_id': parent}, {'$inc': {'replies': 1}})
-        print "nothing"
+        # chirps.update_one({'_id': parent}, {'$push': {'replies': chirp}})
+        chirps.update_one({'_id': parent}, {'$inc': {'replies': 1}})
+
     print "successful login"
     return jsonify({'status': 'OK', 'id': str(chirp.inserted_id)})
 
@@ -177,11 +178,11 @@ def search():
     else:
         rank = 'interest'
 
-    # # get replies for all filtered tweets
-    # if 'replies' in data:
-    #     replies = data['replies']
-    # else:
-    #     replies = True
+    # get replies for all filtered tweets
+    if 'replies' in data:
+        replies = data['replies']
+    else:
+        replies = True
 
     if rank == 'time':
         print query 
@@ -192,7 +193,7 @@ def search():
         print limit
         results = chirps.aggregate([
             {'$match': query},
-            {'$project': {'content':1, 'replies':1, 'username':1, 'timestamp':1, 'likes':1, 'rank':{"$sum": ["replies", {"$size": "$likes"}]}}},
+           {'$project': {'content':1, 'replies':1, 'username':1, 'timestamp':1, 'likes':1, 'rank':{"$sum": ["replies", {"$size": "$likes"}]}}},
             {'$sort': {'rank': -1}},
             {'$limit': limit}
         ])
