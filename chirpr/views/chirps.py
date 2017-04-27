@@ -51,15 +51,8 @@ def addItem():
 
     chirp = chirps.insert_one(query)
 
-    # if content[:3].capitalize() == "RT ":
-    #     chirps.find({"content": content})
-    #     chirps.update_many({"content": content}, {"$inc": {
-    #         "retweets": 1,
-    #     }})
-
     if parent >= 0:
-        # chirps.update_one({'_id': parent}, {'$push': {'replies': chirp}})
-        chirps.update_one({'_id': parent}, {'$inc': {'replies': 1}})
+        # chirps.update_one({'_id': parent}, {'$inc': {'replies': 1}})
 
     print "successful login"
     return jsonify({'status': 'OK', 'id': str(chirp.inserted_id)})
@@ -183,40 +176,17 @@ def search():
     else:
         rank = 'interest'
 
-    # get replies for all filtered tweets
-    if 'replies' in data:
-        replies = data['replies']
-    else:
-        replies = True
+    # # get replies for all filtered tweets
+    # if 'replies' in data:
+    #     replies = data['replies']
+    # else:
+    #     replies = True
 
     if rank == 'time':
-        # query.append({"$sort": {
-        #     "timestamp": -1
-        # }})
-        # query['sort'] = { 
-        #     "timestamp": -1 
-        # } 
         print query 
         results = chirps.find(query).sort('timestamp', pymongo.DESCENDING).limit(limit) 
     else:
-        # query['sort'] = {
-        #     {"$size": "likes"}: -1
-        # }
-        # # query['sort'] = {
-        #     {"$sum": ["retweets", {"$size": "likes"}]}: -1
-        # }
-
-        # query.append(
-        #     {
-        #         "$sort": {
-        #             {"$sum":
-        #                  ["retweets", {"$size": "likes"}]
-        #              }: -1
-        #         }
-        #     }
-        # )
-
-    # results = chirps.aggregate(query).limit(limit)
+        # results = chirps.aggregate(query).limit(limit)
         print query
         print limit
         results = chirps.aggregate([
