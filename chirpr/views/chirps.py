@@ -144,8 +144,7 @@ def search():
     if not 'timestamp' in data:
         timestamp = datetime.utcnow()
     else:
-        # timestamp = datetime.utcfromtimestamp(float(data['timestamp']))
-        timestamp = datetime.utcnow()
+        timestamp = datetime.utcfromtimestamp(float(data['timestamp']))
 
     query["$and"].append({"timestamp": {'$lte': timestamp}})
 
