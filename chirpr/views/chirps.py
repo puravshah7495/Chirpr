@@ -53,7 +53,7 @@ def addItem():
 
     if parent >= 0:
         # chirps.update_one({'_id': parent}, {'$inc': {'replies': 1}})
-
+        print "nothing"
     print "successful login"
     return jsonify({'status': 'OK', 'id': str(chirp.inserted_id)})
 
