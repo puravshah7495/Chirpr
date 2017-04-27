@@ -193,9 +193,9 @@ def search():
         # query.append({"$sort": {
         #     "timestamp": -1
         # }})
-        query['sort'] = { 
-            "timestamp": -1 
-        } 
+        # query['sort'] = { 
+        #     "timestamp": -1 
+        # } 
         print query 
         results = chirps.find(query).sort('timestamp', pymongo.DESCENDING).limit(limit) 
     else:
