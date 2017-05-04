@@ -10,8 +10,9 @@ def getRequestData(request):
         return request.values
 
 mongo = PyMongo(app)
-fs = gridfs.GridFS(mongo.db, collection="fs")
+global fs
 
 with app.app_context():
     chirps = mongo.db.chirps
     mongo.db.chirps.create_index([('content', pymongo.TEXT), ('username', pymongo.TEXT),('timestamp',pymongo.ASCENDING)])
+    fs = gridfs.GridFS(mongo.db, collection="fs")
