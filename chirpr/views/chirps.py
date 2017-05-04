@@ -1,10 +1,9 @@
 from flask import Blueprint, request, render_template, session, jsonify, redirect
-from chirpr.database import mongo, getRequestData
+from chirpr.database import mongo, getRequestData, fs
 from datetime import datetime
 from bson.objectid import ObjectId
 import pymongo
 import traceback
-import gridfs
 import time
 
 chirpMod = Blueprint("chirpMod", __name__)
@@ -65,17 +64,16 @@ def getChirp(id):
     error = False
     errorMsg = ''
     if id is None:
-        print("invalid request")
+        print("Invalid Request: ID is None")
         return jsonify({'status': 'error', 'error': 'Invalid request'})
 
     chirps = mongo.db.chirps
     chirp = chirps.find_one({'_id': id})
     if chirp is None:
-        print("couldn't find id")
+        print("Could not find user with ID")
+        print id
         return jsonify({'status': 'error', 'error': 'ID not found'})
     chirp['_id'] = str(chirp['_id'])
-
-    print "successful get"
     return jsonify({'status': 'OK', 'item': chirp})
 
 
@@ -84,16 +82,14 @@ def deleteChirp(id):
     error = False
     errorMsg = ''
     if id is None:
+        print "Invalid Request: ID is None"
         return jsonify({'status': 'error', 'error': 'Invalid request'})
 
     chirp = mongo.db.chirps.find_one({'_id': id})
-    fs = gridfs.GridFS(mongo.db, collection="fs")
 
     for media_id in chirp['media']:
         fs.delete(ObjectId(media_id))
     mongo.db.chirps.delete_one({'_id': id})
-
-    print "successful delete"
     return jsonify({'status': 'OK'})
 
 
@@ -104,6 +100,8 @@ def like(id):
     if not session.get('loggedIn'):
         error = True
         errorMsg = 'Not logged in'
+        print "Not logged in"
+        print session
         return jsonify({'status': 'error', 'error': errorMsg})
 
     data = getRequestData(request)
@@ -123,8 +121,6 @@ def like(id):
     else:
         chirps.update_one({'_id': id}, {"pull": {"likes": str(userId)}})
         users.update_one({'_id': ObjectId(userId)}, {'pull': {'likes': str(id)}})
-
-    print "successful like"
     return jsonify({'status': 'OK'})
 
 
@@ -205,5 +201,4 @@ def search():
         chirp.pop('_id', None)
         chirpList.append(chirp)
     print len(chirpList)
-    print "successful search"
     return jsonify({'status': 'OK', 'items': chirpList})

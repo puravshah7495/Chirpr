@@ -1,6 +1,7 @@
 from chirpr import app
 from flask_pymongo import PyMongo
 import pymongo
+import gridfs
 
 def getRequestData(request):
     if request.get_json():
@@ -9,6 +10,7 @@ def getRequestData(request):
         return request.values
 
 mongo = PyMongo(app)
+fs = gridfs.GridFS(mongo.db, collection="fs")
 
 with app.app_context():
     chirps = mongo.db.chirps

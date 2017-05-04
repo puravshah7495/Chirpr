@@ -1,9 +1,10 @@
-from flask import Blueprint, request, render_template, jsonify, send_file
-from chirpr.database import getRequestData, mongo
+from flask import Blueprint, request, render_template, jsonify, send_file, abort
+from chirpr.database import getRequestData, mongo, fs
 from werkzeug.utils import secure_filename
 import base64
 import os
 import gridfs
+
 
 media = Blueprint("mediaMod", __name__)
 
@@ -13,13 +14,10 @@ def addMedia():
         return render_template('media.html')
     error = False
     errorMsg = ''
-    # files = mongo.db.media
-    fs = gridfs.GridFS(mongo.db, collection="fs")
+
     mediaFile = request.files['content']
     id = fs.put(mediaFile, filename=mediaFile.filename)
-    # data = base64.b64encode(mediaFile.read())
-    # f = files.insert_one({'content': data})
-    print "successful add media"
+
     return jsonify({'status': 'OK', 'id': str(id)})
 
 @media.route('/media/<ObjectId:id>', methods=['GET'])
@@ -28,13 +26,15 @@ def getMedia(id):
     error = False
     errorMsg = ''
 
-    fs = gridfs.GridFS(mongo.db, collection="fs")
-    img = fs.get(id)
-    print img.filename
+    try:
+        img = fs.get(id)
+        print img.filename
 
-    response = mongo.send_file(img.filename)
-    response.headers['Content-Type'] = 'image/jpeg'
-    print "successful get media"
-    return response
+        response = mongo.send_file(img.filename)
+        response.headers['Content-Type'] = 'image/jpeg'
+        return response
+    except gridfs.errors.NoFile:
+        print  id
+        abort(404)
 
 
