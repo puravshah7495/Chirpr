@@ -88,7 +88,7 @@ def deleteChirp(id):
     chirp = mongo.db.chirps.find_one({'_id': id})
 
     for media_id in chirp['media']:
-        if (fs.exists(id)):
+        if (fs.exists(media_id)):
             fs.delete(ObjectId(media_id))
     mongo.db.chirps.delete_one({'_id': id})
     return jsonify({'status': 'OK'})
