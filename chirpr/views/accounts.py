@@ -78,7 +78,6 @@ def login():
             session['loggedIn'] = True
             session['username'] = username
             session['userId'] = str(user['_id'])
-            print "successful login"
             return jsonify({'status': 'OK'})
         else:
             print "bad login"
@@ -91,6 +90,8 @@ def logout():
         session.pop('username', None)
         return jsonify({'status': 'OK'})
     else:
+        print session
+        print "Could not logout"
         return jsonify({'status': 'error', error: 'Woops, Something went wrong!'})
 
 @account.route('/verify', methods=['POST'])
