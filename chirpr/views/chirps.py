@@ -49,14 +49,14 @@ def addItem():
     else:
         parent = -1
 
-    chirp = chirps.insert_one(query)
+    chirp = chirps.insert_one(query).inserted_id
     
     if parent >= 0:
         # chirps.update_one({'_id': parent}, {'$push': {'replies': chirp}})
         chirps.update_one({'_id': parent}, {'$inc': {'replies': 1}})
 
     print "successful login"
-    return jsonify({'status': 'OK', 'id': str(chirp.inserted_id)})
+    return jsonify({'status': 'OK', 'id': str(chirp)})
 
 
 @chirpMod.route('/item/<ObjectId:id>', methods=['GET'])
@@ -70,7 +70,7 @@ def getChirp(id):
     chirps = mongo.db.chirps
     chirp = chirps.find_one({'_id': id})
     if chirp is None:
-        print("Could not find user with ID")
+        print("Could not find chirp with ID:")
         print id
         return jsonify({'status': 'error', 'error': 'ID not found'})
     chirp['_id'] = str(chirp['_id'])
@@ -88,7 +88,8 @@ def deleteChirp(id):
     chirp = mongo.db.chirps.find_one({'_id': id})
 
     for media_id in chirp['media']:
-        fs.delete(ObjectId(media_id))
+        if (fs.exists(id)):
+            fs.delete(ObjectId(media_id))
     mongo.db.chirps.delete_one({'_id': id})
     return jsonify({'status': 'OK'})
 
