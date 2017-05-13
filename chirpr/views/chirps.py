@@ -30,6 +30,8 @@ def addItem():
 
     if 'media' in data:
         query['media'] = data['media']
+    else:
+        query['media'] = []
 
     content = data['content']
     if (len(content) > 140):
