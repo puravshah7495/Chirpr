@@ -71,7 +71,7 @@ def getChirp(id):
     chirps = mongo.db.chirps
     chirp = chirps.find_one({'_id': id})
     if chirp is None:
-        print("Could not find chirp with ID:")
+        print("GET - Could not find chirp with ID:")
         print id
         return jsonify({'status': 'error', 'error': 'ID not found'})
     chirp['_id'] = str(chirp['_id'])
@@ -87,6 +87,11 @@ def deleteChirp(id):
         return jsonify({'status': 'error', 'error': 'Invalid request'})
 
     chirp = mongo.db.chirps.find_one({'_id': id})
+
+    if chirp is None:
+        print("DELETE - Could not find chirp with ID")
+        print id
+        return jsonify({'status':'ERROR', 'error': 'Invalid Request'})
 
     for media_id in chirp['media']:
         if media_id is not None:
