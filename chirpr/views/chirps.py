@@ -57,7 +57,6 @@ def addItem():
         # chirps.update_one({'_id': parent}, {'$push': {'replies': chirp}})
         chirps.update_one({'_id': parent}, {'$inc': {'replies': 1}})
 
-    print "successful login"
     return jsonify({'status': 'OK', 'id': str(chirp)})
 
 
