@@ -16,7 +16,7 @@ def addMedia():
     errorMsg = ''
 
     mediaFile = request.files['content']
-    id = fs.put(mediaFile, filename=mediaFile.filename)
+    id = fs.put(mediaFile)
 
     return jsonify({'status': 'OK', 'id': str(id)})
 

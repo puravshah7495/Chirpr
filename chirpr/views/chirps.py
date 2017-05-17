@@ -2,12 +2,19 @@ from flask import Blueprint, request, render_template, session, jsonify, redirec
 from chirpr.database import mongo, getRequestData, fs
 from datetime import datetime
 from bson.objectid import ObjectId
+from bson import json_util
+import json
 import pymongo
 import traceback
 import time
 
 chirpMod = Blueprint("chirpMod", __name__)
 
+class JSONEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, ObjectId):
+            return str(o)
+        return json.JSONEncoder.default(self, o)
 
 @chirpMod.route('/additem', methods=['POST'])
 def addItem():
@@ -21,29 +28,28 @@ def addItem():
 
     data = getRequestData(request)
     chirps = mongo.db.chirps
+    
     query = {}
+    query['content'] = ''
+    query['username'] = session.get('username')
+    query['timestamp'] = int(time.mktime(datetime.utcnow().timetuple()))
+    # query['retweets'] = 0
+    # query['replies'] = []
+    query['replies'] = 0
+    query['likes'] = []
 
     if 'content' not in data:
         error = True
         errorMsg = 'Invalid request'
         return jsonify({'status': 'error', 'error': errorMsg})
+    else:
+        content = data['content']
+        if (len(content) > 140):
+            return jsonify({'status': 'error', 'error': 'Chirp is too long'})
+        query['content'] = content
 
     if 'media' in data:
         query['media'] = data['media']
-    else:
-        query['media'] = []
-
-    content = data['content']
-    if (len(content) > 140):
-        return jsonify({'status': 'error', 'error': 'Chirp is too long'})
-
-    query['content'] = content
-    query['username'] = session.get('username')
-    query['timestamp'] = datetime.utcnow()
-    # query['retweets'] = 0
-    # query['replies'] = []
-    query['replies'] = 0
-    query['likes'] = []
 
     if 'parent' in data:
         parent = data['parent']
@@ -140,9 +146,9 @@ def search():
     query = {'$and': []}
 
     if not 'timestamp' in data:
-        timestamp = datetime.utcnow()
+        timestamp = int(time.mktime(datetime.utcnow().timetuple()))
     else:
-        timestamp = datetime.utcfromtimestamp(float(data['timestamp']))
+        timestamp = data['timestamp']
 
     query["$and"].append({"timestamp": {'$lte': timestamp}})
 
@@ -189,23 +195,25 @@ def search():
 
     if rank == 'time':
         print query 
-        results = chirps.find(query).sort('timestamp', pymongo.DESCENDING).limit(limit) 
+        results = chirps.find(query).sort('timestamp', pymongo.DESCENDING).limit(limit)
+        chirpList = []
+        for result in results:
+            result['id'] = str(result['_id'])
+            result.pop('_id',None)
+            chirpList.append(result)
     else:
         # results = chirps.aggregate(query).limit(limit)
         print query
         print limit
         results = chirps.aggregate([
             {'$match': query},
-           {'$project': {'content':1, 'replies':1, 'username':1, 'timestamp':1, 'likes':1, 'rank':{"$sum": ["replies", {"$size": "$likes"}]}}},
+            {'$project': {'_id':0,'id':'$_id','content':1, 'replies':1, 'username':1, 'timestamp':1, 'likes':1, 'rank':{"$sum": ["replies", {"$size": "$likes"}]}}},
             {'$sort': {'rank': -1}},
             {'$limit': limit}
         ])
-
-    chirpList = []
-    for chirp in results:
-        chirp['id'] = str(chirp['_id'])
-        chirp['timestamp'] = int(time.mktime(chirp['timestamp'].timetuple()))
-        chirp.pop('_id', None)
-        chirpList.append(chirp)
+        chirpList = [json.loads(JSONEncoder().encode(result)) for result in results]
+    # for chirp in results:
+        # chirp['timestamp'] = int(time.mktime(chirp['timestamp'].timetuple()))
+        # chirpList.append(chirp)
     print len(chirpList)
     return jsonify({'status': 'OK', 'items': chirpList})
